@@ -12,5 +12,9 @@ user function M110STTS()
 
 	ALERT("PASSOU STTS ")
 
+	// Teste de alteracao de fontes....
+	
+
+
 
 return
