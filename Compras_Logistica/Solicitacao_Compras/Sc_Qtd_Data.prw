@@ -45,7 +45,7 @@ local bVCamp	:= 0
 
 
 
-	If __ReadVar == "M->C1_QUANT" .And. xFilial("SC1") == "  "
+	If __ReadVar == "M->C1_QUANT" .And. xFilial("SC1") == "13"
 
 		lReturn := .T.
 
@@ -56,13 +56,12 @@ Return(lReturn)
 Static Function TelaQtdData()
 *******************************************************************************
 
-    Local aACampos  	:= { {"C1_QUANT"},{"C1_DATPRF"} } //Variavel contendo o campo editavel no Grid
+    Local aAltCpo 	:= {"C1_QUANT","C1_DATPRF" } //Variavel contendo o campo editavel no Grid
     Local aBotoes		:= {}         //Variavel onde sera incluido o botao para a legenda
 
-    Local  aHeader  	:= {}         //Variavel que montara o aHeader do grid
-
-    Private oLista                    //Declarando o objeto do browser
-    Private aColsEx 	:= {}         //Variavel que recebera os dados
+    Local  oLista                    //Declarando o objeto do browser
+    Local  aHeader 	:= {}         //Variavel que montara o aHeader do grid
+    Local  aCols 	:= {}         //Variavel que recebera os dados
 
     //Declarando os objetos de cores para usar na coluna de status do grid
     //Private oVerde  	:= LoadBitmap( GetResources(), "BR_VERDE")
@@ -73,10 +72,11 @@ Static Function TelaQtdData()
     DEFINE MSDIALOG oDlg TITLE "TITULO" FROM 000, 000  TO 300, 700  PIXEL
 
         //chamar a funcao que cria a estrutura do aHeader
-        CriaCabec(@aHeader)
+        IniCabec(@aHeader)
+        IniAcols(@aCols, @aHeader)
 
         //Monta o browser com inclusao, remocao e atualizacao
-        oLista := MsNewGetDados():New( 053, 078, 415, 775, GD_INSERT+GD_DELETE+GD_UPDATE, "AllwaysTrue", "AllwaysTrue", "AllwaysTrue", aACampos,0, 100, "AllwaysTrue", "", "AllwaysTrue", oDlg, aHeader, aColsEx)
+        oLista := MsNewGetDados():New( 053, 078, 415, 775, (GD_INSERT+GD_DELETE+GD_UPDATE), {||}, {||}, "", aAltCpo,0, 100, {||}, "", {||}, oDlg, aHeader, aCols)
 
         //Carregar os itens que irao compor o conteudo do grid
         //Carregar()
@@ -91,16 +91,51 @@ Static Function TelaQtdData()
         aadd(aBotoes,{"NG_ICO_LEGENDA", {||Alert("Legenda")},"Legenda","Legenda"})
 
         EnchoiceBar(oDlg, {|| oDlg:End() }, {|| oDlg:End() },,aBotoes)
-
+crist
     ACTIVATE MSDIALOG oDlg CENTERED
 
 Return
 *******************************************************************************
-Static Function CriaCabec(aHeader)
+Static Function IniCabec(aHeader)
 *******************************************************************************
 
-   Aadd(aHeader, {;
-                  "Quantidade",			; // X3Titulo()
+  Aadd( aHeader, X3CpoHeader("C1_QUANT"))
+  Aadd( aHeader, X3CpoHeader("C1_DATPRF"))
+
+Return()
+*******************************************************************************
+Static Function IniAcols(aCols, aHeader)
+*******************************************************************************
+Local nCpo := 0
+
+For nCpo := 1 To Len(aHeader)
+
+	Aadd(aCols,CriaVar(aHeader[nCpo][2] ))
+
+Next
+
+	Aadd(aCols,.F.)
+
+Return()
+*******************************************************************************
+Static Function X3CpoHeader(cCampo)
+*******************************************************************************
+
+Local aAreaSx3
+Local aAuxiliar := {}
+
+DbSelectArea("SX3")
+aAreaSx3 := GetArea()
+DbSetOrder(2)
+
+If DbSeek(cCampo,.F.)
+	aAuxiliar := { Trim(x3_titulo), x3_campo, x3_picture,x3_tamanho, x3_decimal,.T.,x3_usado, x3_tipo, x3_f3, x3_context }
+EndIf
+
+Return(aAuxiliar)
+/*
+
+   Aadd(aHeader, {"Quantidade",			; // X3Titulo()
                   "C1_QUANT",			; // X3_CAMPO
                   "@E 999999999.9999",	; // X3_PICTURE
                   12,					; // X3_TAMANHO
@@ -133,3 +168,4 @@ Static Function CriaCabec(aHeader)
                   "V"})			  //
 
 Return()
+*/
