@@ -11,7 +11,7 @@ Observações      Código-Fonte gerado por ADVPL WSDL Client 1.120703
 
 User Function _KMQOFWG
 
-
+// Novo teste 
 
 Return  // "dummy" function - Internal Use
 
