@@ -13,11 +13,11 @@
 ** FUNO   : Mt110Tel    | AUTOR : Cristiano Machado  | DATA : 14/12/2015    **
 **---------------------------------------------------------------------------**
 ** DESCRIO:    Este ponto tem a finalidade de manipular o cabecalho da       **
-**          : Solicitao de Compras permitindo a inclusao o e alteracao de         **
+**          : Solicitao de Compras permitindo a inclusao o e alteracao de    **
 **          : campos.                                                        **
 **---------------------------------------------------------------------------**
-** USO      : Especifico para o cliente Unimed-VS                            **
-**---------------------------------------------------------------------------**
+** USO      : Especifico para o cliente Unimed-VS Tratamento para Campo no   **
+**          : cabeçalho da Solicitação de compras para integrasão ao Sys-on  **
 **---------------------------------------------------------------------------**
 **            ATUALIZACOES SOFRIDAS DESDE A CONSTRUCAO INICIAL.              **
 **---------------------------------------------------------------------------**
@@ -71,6 +71,6 @@ Static Function IntSysWeb(PARAMIXB)
 
 	//| Monta no Cabecalho da Solicitao de Compras o Campo Customizado|
 	@ aPosLabel[_LIN_],aPosLabel[_COL_] SAY cDescISo PIXEL SIZE 80,20 Of oParDialog
-  	@ aPosCombo[_LIN_],aPosCombo[_COL_] MSCOMBOBOX oComboBo VAR cIntWSo ITEMS aIntWSo SIZE 038, 010 OF oParDialog COLORS 0, 16777215 PIXEL
+  	@ aPosCombo[_LIN_],aPosCombo[_COL_] MSCOMBOBOX oComboBo VAR cIntWSo ITEMS aIntWSo When( nOpcx == _INCLUIR ) SIZE 038, 010 OF oParDialog COLORS 0, 16777215 PIXEL
 
 Return()

@@ -10,10 +10,10 @@ EM QUE PONTO :  Aps a gravao da Solicitao pela funo A110Grava em incluso, altera
 user function M110STTS()
 
 
-	ALERT("PASSOU STTS ")
+///	ALERT("PASSOU STTS ")
 
 	// Teste de alteracao de fontes....
-	
+
 
 
 

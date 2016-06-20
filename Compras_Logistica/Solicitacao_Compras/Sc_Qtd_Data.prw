@@ -1,15 +1,25 @@
 #include 'protheus.ch'
 #include 'parmtype.ch'
 
+// Posicao dos campos no aHeader Solicitacao de compras Padrão
+#Define P_ITEM 		aScan(aHeader, {|x| AllTrim(x[2])=='C1_ITEM'})
+#Define P_PRODUTO 	aScan(aHeader, {|x| AllTrim(x[2])=='C1_PRODUTO'})
+#Define P_CLVL 		aScan(aHeader, {|x| AllTrim(x[2])=='C1_CLVL'})
+#Define P_QUANT 	aScan(aHeader, {|x| AllTrim(x[2])=='C1_QUANT'})
+#Define P_DATPRF 	aScan(aHeader, {|x| AllTrim(x[2])=='C1_DATPRF'})
+#Define P_CC 		aScan(aHeader, {|x| AllTrim(x[2])=='C1_CC'})
+#Define P_OBS 		aScan(aHeader, {|x| AllTrim(x[2])=='C1_OBS'})
+#Define P_YJUSTIF 	aScan(aHeader, {|x| AllTrim(x[2])=='C1_YJUSTIF'})
+#Define P_CONTA 	aScan(aHeader, {|x| AllTrim(x[2])=='C1_CONTA'})
 
 /*/
 /*****************************************************************************\
 **---------------------------------------------------------------------------**
-** FUNCAO   : Mt110Tel   | AUTOR : Cristiano Machado  | DATA : 14/12/2015    **
+** FUNCAO   : Sc_Qtd_Data| AUTOR : Cristiano Machado  | DATA : 14/12/2015    **
 **---------------------------------------------------------------------------**
-** DESCRICAO:    Este ponto tem a finalidade de manipular o cabecalho da     **
-**          : Solicitao de Compras permitindo a inclusco e alteracco de      **
-**          : campos.                                                        **
+** DESCRICAO: Este Programa tem o Objetivo de abrir uma Tela Através da Tecla**
+**          : de atalho F4. Quando Posicionado em modo Edicao no Campo       **
+**          : C1_QUANT na Solicitação de Compras                             **
 **---------------------------------------------------------------------------**
 ** USO      : Especifico para o cliente Unimed-VS                            **
 **---------------------------------------------------------------------------**
@@ -23,149 +33,197 @@
 \*---------------------------------------------------------------------------*/
 *******************************************************************************
 User function Sc_Qtd_Data()
-*******************************************************************************
-Local nQtdRet := 0
-//Valida se esta Posicionado na Solicitacccco de Compras...
+	*******************************************************************************
+	Private nQtdRet := 0
+	Private nOri	:= N
 
+	If Valida()//| Valida se esta Posicionado na Solicitacoa de Compras em mode de Edicao de Quantidade...
 
-If Valida()
+		TelaQtdData()
 
-	TelaQtdData()
+	EndIf
 
-EndIf
+	Return(nQtdRet)
+	*******************************************************************************
+Static Function Valida()//| Valida se esta Posicionado na Solicitacoa de Compras em mode de Edicao de Quantidade...
+	*******************************************************************************
+	Local lReturn 	:= .F.
+	Local bVProd	:= 0
+	local bVCamp	:= 0
 
-Return(nQtdRet)
-*******************************************************************************
-Static Function Valida() //| Valida |
-*******************************************************************************
-Local lReturn 		:= .F.
-
-Local bVProd	:= 0
-local bVCamp	:= 0
-
-
-
-	If __ReadVar == "M->C1_QUANT" .And. xFilial("SC1") == "13"
+	If __ReadVar == "M->C1_QUANT" .And. xFilial("SC1") == "13" // Apenas disponivel para o Hospital Unimed
 
 		lReturn := .T.
 
 	EndIf
 
-Return(lReturn)
-*******************************************************************************
-Static Function TelaQtdData()
-*******************************************************************************
+	Return(lReturn)
+	*******************************************************************************
+Static Function TelaQtdData()// Montagem da Tela Necessidade
+	*******************************************************************************
 
-    Local aAltCpo 	:= {"C1_QUANT","C1_DATPRF" } //Variavel contendo o campo editavel no Grid
-    Local aBotoes		:= {}         //Variavel onde sera incluido o botao para a legenda
+	Local aAltCpo 	:= {"C1_QUANT","C1_DATPRF" } 	//Variavel contendo o campo editavel no Grid
+	Local aBotoes	:= {}         					//Variavel onde sera incluido o botao para a legenda
 
-    Local  oLista                    //Declarando o objeto do browser
-    Local  aHeader 	:= {}         //Variavel que montara o aHeader do grid
-    Local  aCols 	:= {}         //Variavel que recebera os dados
+	Local  aHeaderN := {}        				 	//Variavel que montara o aHeader do Grid
+	Local  aColsN 	:= {}        					//Variavel que recebera os dados do Acols
 
-    //Declarando os objetos de cores para usar na coluna de status do grid
-    //Private oVerde  	:= LoadBitmap( GetResources(), "BR_VERDE")
-    //Private oAzul  	:= LoadBitmap( GetResources(), "BR_AZUL")
-    //Private oVermelho	:= LoadBitmap( GetResources(), "BR_VERMELHO")
-    //Private oAmarelo	:= LoadBitmap( GetResources(), "BR_AMARELO")
+	Private  oBrowseN := Nil     					//Declarando o objeto do browser Necessidade
 
-    DEFINE MSDIALOG oDlg TITLE "TITULO" FROM 000, 000  TO 300, 700  PIXEL
+	DEFINE MSDIALOG oDlgNes TITLE "Distribuicao da Necessidade" FROM 000, 000  TO 250, 250  PIXEL
 
-        //chamar a funcao que cria a estrutura do aHeader
-        IniCabec(@aHeader)
-        IniAcols(@aCols, @aHeader)
+	//| Funcao que cria a estrutura do aHeader e Acols
+	IniCabec(@aHeaderN)
+	IniaColsN(@aColsN, aHeaderN)
 
-        //Monta o browser com inclusao, remocao e atualizacao
-        oLista := MsNewGetDados():New( 053, 078, 415, 775, (GD_INSERT+GD_DELETE+GD_UPDATE), {||}, {||}, "", aAltCpo,0, 100, {||}, "", {||}, oDlg, aHeader, aCols)
+	//Monta o browser com inclusao, remocao e atualizacao
+	oBrowseN := MsNewGetDados():New( 010,010,180,095,(GD_INSERT+GD_DELETE+GD_UPDATE),'AllwaysTrue()','AllwaysTrue()','', aAltCpo ,000,999,'AllwaysTrue()','','AllwaysTrue()',oDlgNes,aHeaderN,aColsN )
 
-        //Carregar os itens que irao compor o conteudo do grid
-        //Carregar()
+	//Alinho o grid para ocupar todo o meu formulario
+	oBrowseN:oBrowse:Align := CONTROL_ALIGN_ALLCLIENT
 
-        //Alinho o grid para ocupar todo o meu formulario
-        oLista:oBrowse:Align := CONTROL_ALIGN_ALLCLIENT
+	// Ao abrir a janela o cursor esta posicionado no meu objeto
+	oBrowseN:oBrowse:SetFocus()
 
-       // Ao abrir a janela o cursor esta posicionado no meu objeto
-        oLista:oBrowse:SetFocus()
+	EnchoiceBar(oDlgNes,{||MontaLins(),oDlgNes:End()},{||oDlgNes:End()},Nil,aBotoes,Nil,Nil,.F.,.F.,.F.,.T.,.F.,Nil)
 
-        //Crio o menu que ira aparece no botao Acoes relacionadas
-        aadd(aBotoes,{"NG_ICO_LEGENDA", {||Alert("Legenda")},"Legenda","Legenda"})
+	ACTIVATE MSDIALOG oDlgNes CENTERED
 
-        EnchoiceBar(oDlg, {|| oDlg:End() }, {|| oDlg:End() },,aBotoes)
-crist
-    ACTIVATE MSDIALOG oDlg CENTERED
+	Return
+	*******************************************************************************
+Static Function MontaLins()//| Monta Linhas para serem incluidas na Solicitação
+	*******************************************************************************
 
-Return
-*******************************************************************************
-Static Function IniCabec(aHeader)
-*******************************************************************************
+	Local aColsLOri := aClone(Acols[N]) // Recebe uma copia da Linha Atual do Acols.
 
-  Aadd( aHeader, X3CpoHeader("C1_QUANT"))
-  Aadd( aHeader, X3CpoHeader("C1_DATPRF"))
+	For nL := 1 To Len( oBrowseN:Acols) // Percurre todas as Linhas do AcolsN
 
-Return()
-*******************************************************************************
-Static Function IniAcols(aCols, aHeader)
-*******************************************************************************
-Local nCpo := 0
+		If nL > 1
+			//| Ajustes Necessarios no Browse Padrao ao incluir uma linha na Solcitacao de Compras
+			AjustBrowse()
+		EndIf
 
-For nCpo := 1 To Len(aHeader)
+		//| Tratamento Campo C1_PRODUTO
+		__ReadVar 	:= "M->C1_PRODUTO"
+		xVar :=  aColsLOri[P_PRODUTO]
+		GDFieldPut( "C1_PRODUTO", xVar, N )
+		aCols[ N, GDFieldPos( "C1_PRODUTO" ) ] := xVar
+		M->C1_PRODUTO       := xVar
+		xVar := Nil
+		lOk := CheckSX3('C1_PRODUTO',M->C1_PRODUTO)
+		RunTrigger(2,n,"",,PADR('C1_PRODUTO',10))
 
-	Aadd(aCols,CriaVar(aHeader[nCpo][2] ))
+		//| Tratamento Campo C1_CLVL
+		__ReadVar 	:= "M->C1_CLVL"
+		xVar :=  aColsLOri[P_CLVL]
+		GDFieldPut( "C1_CLVL", xVar, N )
+		aCols[ N, GDFieldPos( "C1_CLVL" ) ] := xVar
+		M->C1_CLVL       := xVar
+		xVar := Nil
+		lOk := CheckSX3('C1_CLVL',M->C1_CLVL)
+		RunTrigger(2,n,"",,PADR('C1_CLVL',10))
 
-Next
+		//| Tratamento Campo C1_QUANT
+		xVar :=  oBrowseN:Acols[nL][1]
+		GDFieldPut( "C1_QUANT", xVar, N )
+		aCols[ N, GDFieldPos( "C1_QUANT" ) ] := xVar
+		M->C1_QUANT       := xVar
+		xVar := Nil
 
-	Aadd(aCols,.F.)
+		//| Tratamento Campo C1_DATPRF
+		xVar := oBrowseN:Acols[nL][2]
+		GDFieldPut( "C1_DATPRF", xVar, N )
+		aCols[ N, GDFieldPos( "C1_DATPRF" ) ] := xVar
+		M->C1_DATPRF       := xVar
+		xVar := Nil
 
-Return()
-*******************************************************************************
+		//| Tratamento Campo C1_CC
+		xVar :=  aColsLOri[P_CC]
+		GDFieldPut( "C1_CC", xVar, N )
+		aCols[ N, GDFieldPos( "C1_CC" ) ] := xVar
+		M->C1_CC       := xVar
+		xVar := Nil
+
+		//| Tratamento Campo C1_OBS
+		xVar :=  aColsLOri[P_OBS]
+		GDFieldPut( "C1_OBS", xVar, N )
+		aCols[ N, GDFieldPos( "C1_OBS" ) ] := xVar
+		M->C1_OBS       := xVar
+		xVar := Nil
+
+		//| Tratamento Campo C1_YJUSTIF
+		xVar :=  aColsLOri[P_YJUSTIF]
+		GDFieldPut( "C1_YJUSTIF", xVar, N )
+		aCols[ N, GDFieldPos( "C1_YJUSTIF" ) ] := xVar
+		M->C1_YJUSTIF       := xVar
+		xVar := Nil
+
+	Next
+
+	// Retorna ao Campo Inicial e o alimenta Com a  Quantidade Correta
+	RestQtdOri()
+
+	Return()
+	*******************************************************************************
+Static Function RestQtdOri()// Retorna ao Campo Inicial e o alimenta Com a  Quantidade Correta
+	*******************************************************************************
+
+	o:nat := N := nOri
+	__ReadVar :=  "M->C1_QUANT"
+	xVar :=  oBrowseN:Acols[1][1]
+	GDFieldPut( "C1_QUANT", xVar, N )
+	aCols[ N, GDFieldPos( "C1_QUANT" ) ] := nQtdRet := xVar
+	M->C1_QUANT       := xVar
+	xVar := Nil
+
+	Return()
+	*******************************************************************************
+Static Function AjustBrowse() //| Ajustes Necessarios no Browse Padrao da Solcitacao de Compras
+	*******************************************************************************
+
+	eVal( o:bGoTFocus )
+	eVal( o:bAdd )
+	o:oMother:aLastEdit 	:=  {n}
+	o:oMother:lNewLine		:= .F.
+	o:oMother:lChgField		:= .T.
+	o:Refresh()
+
+	Return()
+	*******************************************************************************
+Static Function IniCabec(aHeaderN) //| Funcao que cria a estrutura do aHeader
+	*******************************************************************************
+
+	Aadd( aHeaderN, X3CpoHeader("C1_QUANT"))
+	Aadd( aHeaderN, X3CpoHeader("C1_DATPRF"))
+
+	Return()
+	*******************************************************************************
+Static Function IniaColsN(aColsN, aHeaderN) //| Funcao que cria a estrutura Acols e o Inicializa
+	*******************************************************************************
+	Local nCpo 	 := 0
+	Local nTHead := Len(aHeaderN)
+
+	aColsN := { Array(nTHead + 1) }
+
+	aColsN[1][1] :=  aCols[ N, GDFieldPos( "C1_QUANT" ) ]
+	aColsN[1][2] :=  aCols[ N, GDFieldPos( "C1_DATPRF" ) ]
+	aColsN[1][nTHead + 1] := .F.
+
+	Return()
+	*******************************************************************************
 Static Function X3CpoHeader(cCampo)
-*******************************************************************************
+	*******************************************************************************
+	Local aAreaAnt := GetArea()
+	Local aAreaSx3 := SX3->( GetArea() )
+	Local aAuxiliar := {}
 
-Local aAreaSx3
-Local aAuxiliar := {}
+	DbSelectArea("SX3");DbSetOrder(2)
 
-DbSelectArea("SX3")
-aAreaSx3 := GetArea()
-DbSetOrder(2)
+	If DbSeek(cCampo,.F.)
+		aAuxiliar := { Trim(x3_titulo), x3_campo, x3_picture, x3_tamanho, x3_decimal, "AllwaysTrue()", x3_usado, x3_tipo, x3_arquivo, x3_context }
+	EndIf
 
-If DbSeek(cCampo,.F.)
-	aAuxiliar := { Trim(x3_titulo), x3_campo, x3_picture,x3_tamanho, x3_decimal,.T.,x3_usado, x3_tipo, x3_f3, x3_context }
-EndIf
+	RestArea(aAreaSx3)
+	RestArea(aAreaAnt)
 
 Return(aAuxiliar)
-/*
-
-   Aadd(aHeader, {"Quantidade",			; // X3Titulo()
-                  "C1_QUANT",			; // X3_CAMPO
-                  "@E 999999999.9999",	; // X3_PICTURE
-                  12,					; // X3_TAMANHO
-                  2,					; // X3_DECIMAL
-                  ".T.",				; // X3_VALID
-                  "",					; // X3_USADO
-                  "N",					; // X3_TIPO
-                  "",					; // X3_F3
-                  "R",					; // X3_CONTEXT
-                  "",					; // X3_CBOX
-                  "",					; // X3_RELACAO
-                  "",					; // X3_WHEN
-                  "V"})			  //
-
-
-   Aadd(aHeader, {;
-                  "Necessidade",	; // X3Titulo()
-                  "C1_DATPRF",	; // X3_CAMPO
-                  "",			; // X3_PICTURE
-                  8,			; // X3_TAMANHO
-                  0,			; // X3_DECIMAL
-                  ".T.",		; // X3_VALID
-                  "",			; // X3_USADO
-                  "D",			; // X3_TIPO
-                  "",			; // X3_F3
-                  "R",			; // X3_CONTEXT
-                  "",			; // X3_CBOX
-                  "",			; // X3_RELACAO
-                  "",			; // X3_WHEN
-                  "V"})			  //
-
-Return()
-*/

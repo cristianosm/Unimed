@@ -3,10 +3,6 @@
 
 user function Exemplo_MsGetDados()
 
-	#include "protheus.ch"
-
-User Function MrbwGtCl()
-
 	Private cCadastro := "Pedidos de Venda"
 
 	Private aRotina := {{"Pesquisar" , "axPesqui" , 0, 1},;
