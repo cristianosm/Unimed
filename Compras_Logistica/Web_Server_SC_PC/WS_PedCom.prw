@@ -8,15 +8,15 @@
 WsService WS_PEDCOM Description "WS Integracao Protheus x Syson - Recebe Pedido de Compras" NAMESPACE "http://172.22.0.185:81/ws/"
 	*******************************************************************************
 
-	WsData oPedido		As SPC_Pedido
-	WsData oRetorno		As SPC_Retorno
+	WsData Pedido		As SPC_Pedido
+	WsData Retorno		As SPC_Retorno
 
 	WsMethod RecebePedido Description	"Metodo que recebe o Pedido de Compras apartir do Sys-on"
 
 EndWsService
 
 *******************************************************************************
-WsMethod RecebePedido WsReceive oPedido WsSend oRetorno WsService WS_PEDCOM //| Metodo Recebe Pedido de Compras
+WsMethod RecebePedido WsReceive Pedido WsSend Retorno WsService WS_PEDCOM //| Metodo Recebe Pedido de Compras
 	*******************************************************************************
 
 	Local lReturn 	:= .T.
@@ -36,18 +36,24 @@ WsMethod RecebePedido WsReceive oPedido WsSend oRetorno WsService WS_PEDCOM //| 
 	*/
 
 	If lReturn == .F.
-		SetSoapFault('Metodo não disponível','Inconsistencia')
-		Return lReturn
-	EndIF
+		SetSoapFault('Metodo nao disponivel','Inconsistencia')
+
+		Retorno:Ocorrencia := !lReturn
+		Retorno:Observacao := "Pedido nao recebido..."
+		Return Retorno
+	Else
+
+		Retorno:Ocorrencia := lReturn
+		Retorno:Observacao := "Pedido Recebido com Sucesso..."
+	EndIf
 
 Return lReturn
-
 *******************************************************************************
 WSSTRUCT SPC_Retorno //| Retorno de Ocorrencia do Recebimento do Pedido
 	*******************************************************************************
 
-	WsData ocorrencia     	As Boolean
-	WsData observacao		As String Optional
+	WsData Ocorrencia     	As Boolean
+	WsData Observacao		As String Optional
 
 ENDWSSTRUCT
 
@@ -55,8 +61,8 @@ ENDWSSTRUCT
 WSSTRUCT SPC_Pedido //| Pedido de Compras
 	*******************************************************************************
 
-	WsData cabecalho		As SPC_Cabecalho
-	WsData detalhes		   	As Array of SPC_Detalhes
+	WsData Cabecalho		As SPC_Cabecalho
+	WsData Detalhes		   	As Array of SPC_Detalhes
 
 ENDWSSTRUCT
 
@@ -64,12 +70,12 @@ ENDWSSTRUCT
 WSSTRUCT SPC_Cabecalho //| Cabecalho do Pedido de compras
 	*******************************************************************************
 
-	WsData emissao		   	As Date  		//| Data de emissao do pedido
-	WsData fornecedor	  	As Integer  	//|
-	WsData condpag		   	As String
-	WsData contato		   	As String
-	WsData unidadesol	   	As Integer
-	WsData frete		   	As SPC_Frete Optional
+	WsData Emissao		   	As Date  		//| Data de emissao do pedido
+	WsData Fornecedor	  	As String  	//|
+	WsData Condpag		   	As String
+	WsData Contato		   	As String
+	WsData UnidadeSol	   	As Integer
+	WsData Frete		   	As SPC_Frete Optional
 
 ENDWSSTRUCT
 
@@ -77,11 +83,11 @@ ENDWSSTRUCT
 WSSTRUCT SPC_Frete // Frete do Pedido de compras
 	*******************************************************************************
 
-	WsData cnpj		      	As Integer
-	WsData nome		      	As String
-	WsData tipo		      	As String
-	WsData valor		  	As Float
-	WsData seguro		  	As Float
+	WsData Cnpj		      	As String Optional
+	WsData Nome		      	As String Optional
+	WsData Tipo		      	As String Optional
+	WsData Valor		  	As Float Optional
+	WsData Seguro		  	As Float Optional
 
 ENDWSSTRUCT
 
@@ -89,16 +95,16 @@ ENDWSSTRUCT
 WSSTRUCT SPC_Detalhes //| Cabecalho do Pedido de compras
 	*******************************************************************************
 
-	WsData item		      	As Integer  	//|
-	WsData produto	      	As String  	//|
-	WsData prodfor	      	As String
-	WsData unimed        	As String
-	WsData quantidade		As Float
-	WsData prcunit	      	As Float
-	WsData total         	As Float
-	WsData dataentr       	As Date
-	WsData obs	         	As String
-	WsData numsc	       	As Integer
-	WsData itemsc         As Integer
+	WsData Item		      	As String
+	WsData Produto	      	As String
+	WsData ProdFor	      	As String
+	WsData UniMed        	As String
+	WsData Quantidade		As Float
+	WsData PrcUnit	      	As Float
+	WsData Total         	As Float
+	WsData DataEntr       	As Date
+	WsData Obs	         	As String
+	WsData NumSC	       	As String
+	WsData ItemSC           As String
 
 ENDWSSTRUCT
