@@ -4,14 +4,14 @@
 /* ===============================================================================
 WSDL Location    http://sys-on.com.br:8080/SocWebService/VS?wsdl
 Gerado em        05/30/16 18:52:55
-Observações      Código-Fonte gerado por ADVPL WSDL Client 1.120703
-                 Alterações neste arquivo podem causar funcionamento incorreto
-                 e serão perdidas caso o código-fonte seja gerado novamente.
+Observacoes      Codigo-Fonte gerado por ADVPL WSDL Client 1.120703
+                 Alteracoes neste arquivo podem causar funcionamento incorreto
+                 e serao perdidas caso o codigo-fonte seja gerado novamente.
 =============================================================================== */
 
 User Function _KMQOFWG
 
-// Novo teste 
+// Novo teste
 
 Return  // "dummy" function - Internal Use
 
@@ -48,7 +48,7 @@ WSMETHOD NEW WSCLIENT WSVSService
 	::Init()
 
 	If !FindFunction("XMLCHILDEX")
-		UserException("O Código-Fonte Client atual requer os executáveis do Protheus Build [7.00.131227A-20151103] ou superior. Atualize o Protheus ou gere o Código-Fonte novamente utilizando o Build atual.")
+		UserException("O Codigo-Fonte Client atual requer os executaveis do Protheus Build [7.00.131227A-20151103] ou superior. Atualize o Protheus ou gere o Codigo-Fonte novamente utilizando o Build atual.")
 	EndIf
 
 Return Self
@@ -233,7 +233,7 @@ Return
 
 *******************************************************************************
 WSMETHOD CLONE WSCLIENT VSService_solicitacao
-*******************************************************************************	
+*******************************************************************************
 	Local oClone := VSService_solicitacao():NEW()
 
 Return oClone

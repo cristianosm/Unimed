@@ -1,7 +1,7 @@
 #include 'protheus.ch'
 #include 'parmtype.ch'
 
-// Posicao dos campos no aHeader Solicitacao de compras Padrão
+// Posicao dos campos no aHeader Solicitacao de compras Padrao
 #Define P_ITEM 		aScan(aHeader, {|x| AllTrim(x[2])=='C1_ITEM'})
 #Define P_PRODUTO 	aScan(aHeader, {|x| AllTrim(x[2])=='C1_PRODUTO'})
 #Define P_CLVL 		aScan(aHeader, {|x| AllTrim(x[2])=='C1_CLVL'})
@@ -17,9 +17,9 @@
 **---------------------------------------------------------------------------**
 ** FUNCAO   : Sc_Qtd_Data| AUTOR : Cristiano Machado  | DATA : 14/12/2015    **
 **---------------------------------------------------------------------------**
-** DESCRICAO: Este Programa tem o Objetivo de abrir uma Tela Através da Tecla**
+** DESCRICAO: Este Programa tem o Objetivo de abrir uma Tela Atraves da Tecla**
 **          : de atalho F4. Quando Posicionado em modo Edicao no Campo       **
-**          : C1_QUANT na Solicitação de Compras                             **
+**          : C1_QUANT na Solicitacao de Compras                             **
 **---------------------------------------------------------------------------**
 ** USO      : Especifico para o cliente Unimed-VS                            **
 **---------------------------------------------------------------------------**
@@ -91,7 +91,7 @@ Static Function TelaQtdData()// Montagem da Tela Necessidade
 
 	Return
 	*******************************************************************************
-Static Function MontaLins()//| Monta Linhas para serem incluidas na Solicitação
+Static Function MontaLins()//| Monta Linhas para serem incluidas na Solicitacao
 	*******************************************************************************
 
 	Local aColsLOri := aClone(Acols[N]) // Recebe uma copia da Linha Atual do Acols.
@@ -220,7 +220,7 @@ Static Function X3CpoHeader(cCampo)
 	DbSelectArea("SX3");DbSetOrder(2)
 
 	If DbSeek(cCampo,.F.)
-		aAuxiliar := { Trim(x3_titulo), x3_campo, x3_picture, x3_tamanho, x3_decimal, "AllwaysTrue()", x3_usado, x3_tipo, x3_arquivo, x3_context }
+		aAuxiliar := { Trim(x3_titulo), x3_campo, x3_picture, x3_tamanho, x3_decimal, "AllwaysTrue()", x3_usado, x3_tipo, x3_f3, x3_context }
 	EndIf
 
 	RestArea(aAreaSx3)
