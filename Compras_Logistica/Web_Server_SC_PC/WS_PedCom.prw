@@ -1,4 +1,4 @@
-//#Include "Protheus.ch"
++//#Include "Protheus.ch"
 #Include "Apwebsrv.ch"
 #Include "Totvs.ch"
 //#Include "RestFul.ch"
@@ -11,15 +11,15 @@ WsService WS_PEDCOM Description "WS Integracao Protheus x Syson - Recebe Pedido 
 *******************************************************************************
 
 
-	WsData Pedido		As SPC_Pedido 	Optional
-	WsData Retorno		As SPC_Retorno 	Optional
+	WsData Pedido	As SPC_Pedido
+	WsData oRetorno	As SPC_RPedido
 
 	WsMethod RecebePedido Description	"Metodo que recebe o Pedido de Compras apartir do Sys-on"
 
 EndWsService
 
 *******************************************************************************
-WsMethod RecebePedido WsReceive Pedido WsSend Retorno WsService WS_PEDCOM //| Metodo Recebe Pedido de Compras
+WsMethod RecebePedido WsReceive Pedido WsSend oRetorno WsService WS_PEDCOM //| Metodo Recebe Pedido de Compras
 *******************************************************************************
 
 	Local lReturn 	:= .T.
@@ -41,21 +41,35 @@ WsMethod RecebePedido WsReceive Pedido WsSend Retorno WsService WS_PEDCOM //| Me
 	If lReturn == .F.
 		SetSoapFault('Metodo nao disponivel','Inconsistencia')
 
-		Retorno:Ocorrencia := !lReturn
-		Retorno:Observacao := "Pedido nao recebido..."
-		Return Retorno
+		oRetorno:Pedido:Retorno:Ocorrencia := "N"
+		oRetorno:Pedido:Retorno:Observacao := "Pedido nao recebido..."
+
 	Else
 
-		Retorno:Ocorrencia := lReturn
-		Retorno:Observacao := "Pedido Recebido com Sucesso..."
+		oRetorno:Pedido:Retorno:Ocorrencia := "S"
+		oRetorno:Pedido:Retorno:Observacao := "Pedido Recebido com Sucesso..."
 	EndIf
 
 Return lReturn
 *******************************************************************************
-WSSTRUCT SPC_Retorno //| Retorno de Ocorrencia do Recebimento do Pedido
+WSSTRUCT  SPC_RPedido//| Retorno de Ocorrencia do Recebimento do Pedido
 *******************************************************************************
 
-	WsData Ocorrencia     	As Boolean 	Optional
+	WsData Pedido          As SPC_Retorno
+
+ENDWSSTRUCT
+*******************************************************************************
+WSSTRUCT SPC_Retorno //| Ocorrencia do Recebimento do Pedido
+*******************************************************************************
+
+	WsData Retorno     	As SPC_Ocorrencia
+
+ENDWSSTRUCT
+*******************************************************************************
+WSSTRUCT SPC_Ocorrencia //| Ocorrencia do Recebimento do Pedido
+*******************************************************************************
+
+	WsData Ocorrencia     	As String
 	WsData Observacao		As String 	Optional
 
 ENDWSSTRUCT
@@ -63,18 +77,18 @@ ENDWSSTRUCT
 WSSTRUCT SPC_Pedido //| Pedido de Compras
 	*******************************************************************************
 
-	WsData Cabecalho		As SPC_Cabecalho Optional
-	WsData Detalhes		   	As Array of SPC_Detalhes Optional
+	WsData Cabecalho		As SPC_Cabecalho
+	WsData Detalhes		   	As Array of N_ITEM
 
 ENDWSSTRUCT
 *******************************************************************************
 WSSTRUCT SPC_Cabecalho //| Cabecalho do Pedido de compras
 	*******************************************************************************
 
-	WsData Emissao		   	As Date 		Optional
-	WsData Fornecedor	  	As String 		Optional
-	WsData CondPag		   	As String 		Optional
-	WsData Contato		   	As String 		Optional
+	WsData Emissao		   	As Date
+	WsData Fornecedor	  	As Integer
+	WsData CondPag		   	As String
+	WsData Contato		   	As String
 	WsData UnidadeSol	   	As Integer 		Optional
 	WsData Frete		   	As SPC_Frete 	Optional
 
@@ -83,7 +97,7 @@ ENDWSSTRUCT
 WSSTRUCT SPC_Frete // Frete do Pedido de compras
 	*******************************************************************************
 
-	WsData Cnpj		      	As String 	Optional
+	WsData Cnpj		      	As Integer 	Optional
 	WsData Nome		      	As String 	Optional
 	WsData Tipo		      	As String 	Optional
 	WsData Valor		  	As Float 	Optional
@@ -91,19 +105,19 @@ WSSTRUCT SPC_Frete // Frete do Pedido de compras
 
 ENDWSSTRUCT
 *******************************************************************************
-WSSTRUCT SPC_Detalhes //| Cabecalho do Pedido de compras
+WSSTRUCT N_ITEM //| Cabecalho do Pedido de compras
 	*******************************************************************************
 
-	WsData Item		      	As String 	Optional
+	WsData Item		      	As Integer
 	WsData Produto	      	As String 	Optional
-	WsData ProdFor	      	As String 	Optional
-	WsData UniMed        	As String 	Optional
-	WsData Quantidade		As Float  	Optional
-	WsData PrcUnit	      	As Float  	Optional
-	WsData Total         	As Float  	Optional
-	WsData DataEntr       	As Date   	Optional
+	WsData ProdFor	      	As String
+	WsData UniMed        	As String
+	WsData Quantidade		As Float
+	WsData PrcUnit	      	As Float
+	WsData Total         	As Float
+	WsData DataEntr       	As Date
 	WsData Obs	         	As String 	Optional
-	WsData NumSC	       	As String 	Optional
-	WsData ItemSC           As String 	Optional
+	WsData NumSC	       	As Integer
+	WsData ItemSC           As Integer
 
 ENDWSSTRUCT

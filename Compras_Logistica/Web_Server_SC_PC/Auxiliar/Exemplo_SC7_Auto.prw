@@ -52,7 +52,7 @@ User function Exemplo_SC7_Auto(_aCab,_aDet)
 					 {"C7_LOTPLS"   ,_aDet[nD][AD_LOTPLS]	,nil},;
 					 {"C7_VLDESC"   ,_aDet[nD][AD_VLDESC]   ,nil}})
 
-	Next i
+	Next nD
 
 	If Len(aItens) > 0
 
