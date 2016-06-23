@@ -129,7 +129,7 @@ User function Client_EnvSol()
 	oDetalhes:cdescricao	:= aDetalhes[SC_DT03]
 	oDetalhes:cprodfor  	:= aDetalhes[SC_DT04]
 	oDetalhes:cunimed   	:= aDetalhes[SC_DT05]
-	oDetalhes:cquantidade	:= aDetalhes[SC_DT06]
+	oDetalhes:nquantidade	:= aDetalhes[SC_DT06]
 	oDetalhes:cnecessidade	:= aDetalhes[SC_DT07]
 	oDetalhes:cobs        	:= aDetalhes[SC_DT08]
 
@@ -148,13 +148,13 @@ User function Client_EnvSol()
 		cSoapFCode  := GetWSCError(2)  // Soap Fault Code
 		cSoapFDescr := GetWSCError(3)
 
-		If !empty(cSoapFCode)    // Caso a ocorrência de erro esteja com o fault_code preenchido ,
-			// a mesma teve relação com a chamada do serviço .
+		If !empty(cSoapFCode)    // Caso a ocorrencia de erro esteja com o fault_code preenchido ,
+			// a mesma teve relacao com a chamada do servico .
 			Alert(cSoapFDescr,cSoapFCode)
-		Else   // Caso a ocorrência não tenha o soap_code preenchido
-			// Ela está relacionada a uma outra falha ,    /
+		Else   // Caso a ocorrencia nao tenha o soap_code preenchido
+			// Ela esta relacionada a uma outra falha ,    /
 			// provavelmente local ou interna.
-			Alert(cSvcError,'FALHA INTERNA DE EXECUCAO DO SERVIÇO')
+			Alert(cSvcError,'FALHA INTERNA DE EXECUCAO DO SERVICO')
 		Endif
 	EndIf
 

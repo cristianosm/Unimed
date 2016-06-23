@@ -3,13 +3,13 @@
 
 /* ===============================================================================
 WSDL Location    http://sys-on.com.br:8080/SocWebService/VS?wsdl
-Gerado em        06/23/16 11:44:05
-Observações      Código-Fonte gerado por ADVPL WSDL Client 1.120703
-                 Alterações neste arquivo podem causar funcionamento incorreto
-                 e serão perdidas caso o código-fonte seja gerado novamente.
+Gerado em        06/23/16 16:43:46
+Observa______es      C___digo-Fonte gerado por ADVPL WSDL Client 1.120703
+                 Altera______es neste arquivo podem causar funcionamento incorreto
+                 e ser___o perdidas caso o c___digo-fonte seja gerado novamente.
 =============================================================================== */
 
-User Function _NCUOGWS ; Return  // "dummy" function - Internal Use
+User Function _WFIRKSP ; Return  // "dummy" function - Internal Use
 
 /* -------------------------------------------------------------------------------
 WSDL Service WSVSService
@@ -41,7 +41,7 @@ ENDWSCLIENT
 WSMETHOD NEW WSCLIENT WSVSService
 ::Init()
 If !FindFunction("XMLCHILDEX")
-	UserException("O Código-Fonte Client atual requer os executáveis do Protheus Build [7.00.131227A-20151103] ou superior. Atualize o Protheus ou gere o Código-Fonte novamente utilizando o Build atual.")
+	UserException("O C___digo-Fonte Client atual requer os execut___veis do Protheus Build [7.00.131227A-20151103] ou superior. Atualize o Protheus ou gere o C___digo-Fonte novamente utilizando o Build atual.")
 EndIf
 Return Self
 
@@ -174,7 +174,7 @@ BEGIN WSMETHOD
 cSoap += '<enviaSolicitacao xmlns="http://services.soc.syson.com.br/">'
 cSoap += WSSoapValue("solicitacao", ::oWSsolicitacao, oWSsolicitacao , "solicitacao", .F. , .F., 0 , "http://services.soc.syson.com.br/", .F.)
 cSoap += "</enviaSolicitacao>"
-
+VarInfo("Objeto",cSoap )
 oXmlRet := SvcSoapCall(	Self,cSoap,;
 	"",;
 	"DOCUMENT","http://services.soc.syson.com.br/",,,;
@@ -463,7 +463,7 @@ WSSTRUCT VSService_detalhes
 	WSDATA   cdescricao                AS string OPTIONAL
 	WSDATA   cprodfor                  AS string OPTIONAL
 	WSDATA   cunimed                   AS string OPTIONAL
-	WSDATA   cquantidade               AS string OPTIONAL
+	WSDATA   nquantidade               AS float OPTIONAL
 	WSDATA   cnecessidade              AS string OPTIONAL
 	WSDATA   cobs                      AS string OPTIONAL
 	WSMETHOD NEW
@@ -487,7 +487,7 @@ WSMETHOD CLONE WSCLIENT VSService_detalhes
 	oClone:cdescricao           := ::cdescricao
 	oClone:cprodfor             := ::cprodfor
 	oClone:cunimed              := ::cunimed
-	oClone:cquantidade          := ::cquantidade
+	oClone:nquantidade          := ::nquantidade
 	oClone:cnecessidade         := ::cnecessidade
 	oClone:cobs                 := ::cobs
 Return oClone
@@ -499,7 +499,7 @@ WSMETHOD SOAPSEND WSCLIENT VSService_detalhes
 	cSoap += WSSoapValue("descricao", ::cdescricao, ::cdescricao , "string", .F. , .F., 0 , "vs.solicitacao", .F.)
 	cSoap += WSSoapValue("prodfor", ::cprodfor, ::cprodfor , "string", .F. , .F., 0 , "vs.solicitacao", .F.)
 	cSoap += WSSoapValue("unimed", ::cunimed, ::cunimed , "string", .F. , .F., 0 , "vs.solicitacao", .F.)
-	cSoap += WSSoapValue("quantidade", ::cquantidade, ::cquantidade , "string", .F. , .F., 0 , "vs.solicitacao", .F.)
+	cSoap += WSSoapValue("quantidade", ::nquantidade, ::nquantidade , "float", .F. , .F., 0 , "vs.solicitacao", .F.)
 	cSoap += WSSoapValue("necessidade", ::cnecessidade, ::cnecessidade , "string", .F. , .F., 0 , "vs.solicitacao", .F.)
 	cSoap += WSSoapValue("obs", ::cobs, ::cobs , "string", .F. , .F., 0 , "vs.solicitacao", .F.)
 Return cSoap
@@ -512,7 +512,7 @@ WSMETHOD SOAPRECV WSSEND oResponse WSCLIENT VSService_detalhes
 	::cdescricao         :=  WSAdvValue( oResponse,"_DESCRICAO","string",NIL,NIL,NIL,"S",NIL,NIL)
 	::cprodfor           :=  WSAdvValue( oResponse,"_PRODFOR","string",NIL,NIL,NIL,"S",NIL,NIL)
 	::cunimed            :=  WSAdvValue( oResponse,"_UNIMED","string",NIL,NIL,NIL,"S",NIL,NIL)
-	::cquantidade        :=  WSAdvValue( oResponse,"_QUANTIDADE","string",NIL,NIL,NIL,"S",NIL,NIL)
+	::nquantidade        :=  WSAdvValue( oResponse,"_QUANTIDADE","float",NIL,NIL,NIL,"N",NIL,NIL)
 	::cnecessidade       :=  WSAdvValue( oResponse,"_NECESSIDADE","string",NIL,NIL,NIL,"S",NIL,NIL)
 	::cobs               :=  WSAdvValue( oResponse,"_OBS","string",NIL,NIL,NIL,"S",NIL,NIL)
 Return
