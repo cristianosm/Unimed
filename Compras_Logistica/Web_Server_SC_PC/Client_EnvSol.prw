@@ -40,7 +40,14 @@ User function Client_EnvSol()
 	Local aCabecalho 	:= {Nil,Nil,Nil,Nil,Nil,Nil,Nil}
 	Local aComprador 	:= {Nil,Nil,Nil,Nil}
 	Local aDetalhes 	:= {Nil,Nil,Nil,Nil,Nil,Nil,Nil,Nil,Nil}
+
 	Local oSolicitacao	:= Nil
+	Local oCabecalho	:= Nil
+	Local oComprador	:= Nil
+	Local oDetalhes		:= Nil
+	Local oRetorno		:= Nil
+
+	Local cSolicitacao	:= Nil
 	Local cRetorno
 	Local lRetorno
 	Local cError		:= ""
@@ -94,8 +101,42 @@ User function Client_EnvSol()
 	//cFile := "\Sol_Syson.xml"
 	//oXml := XmlParserFile( cFile, "_", @cError, @cWarning )
 
-	oSolicitacao := MontaXml()
-	oSolicitacao := EncodeUTF8(oSolicitacao)
+	cSolicitacao := MontaXml()
+	cSolicitacao := XmlC14N( cSolicitacao, " ",@cError,@cWarning)
+
+	oSolicitacao := VSService_solicitacao():New()
+	oCabecalho	 := VSService_cabecalho():New()
+	oComprador	 := VSService_comprador():New()
+	oDetalhes	 := VSService_detalhes():New()
+    oRetorno	 := VSService_retorno():New()
+
+
+
+   	oComprador:ncodigo      := aComprador[SC_CO01]
+	oComprador:cnome        := aComprador[SC_CO02]
+	oComprador:cfone       	:= aComprador[SC_CO03]
+	oComprador:cemail      	:= aComprador[SC_CO04]
+
+    oCabecalho:nnumero      := aCabecalho[SC_CA01]
+	oCabecalho:nunidade     := aCabecalho[SC_CA02]
+	oCabecalho:csolicitante := aCabecalho[SC_CA03]
+	oCabecalho:nlocentrega  := aCabecalho[SC_CA04]
+	oCabecalho:cemissao     := aCabecalho[SC_CA05]
+	oCabecalho:oWScomprador := oComprador
+
+    oDetalhes:nitem			:= aDetalhes[SC_DT01]
+	oDetalhes:cproduto		:= aDetalhes[SC_DT02]
+	oDetalhes:cdescricao	:= aDetalhes[SC_DT03]
+	oDetalhes:cprodfor  	:= aDetalhes[SC_DT04]
+	oDetalhes:cunimed   	:= aDetalhes[SC_DT05]
+	oDetalhes:cquantidade	:= aDetalhes[SC_DT06]
+	oDetalhes:cnecessidade	:= aDetalhes[SC_DT07]
+	oDetalhes:cobs        	:= aDetalhes[SC_DT08]
+
+	oSolicitacao:oWScabecalho 	:= oCabecalho
+	Aadd(oSolicitacao:oWSdetalhes,oDetalhes)
+	oSolicitacao:oWSretorno 	:= oRetorno
+
 	lRetorno := oWsEnvSol:enviaSolicitacao(oSolicitacao)
 
 	//VarInfo("Objeto", oWsEnvSol:enviaSolicitacao:oXmlRet)
