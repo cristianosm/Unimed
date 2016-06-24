@@ -124,7 +124,7 @@ Local cSoap := "" , oXmlRet
 BEGIN WSMETHOD
 
 cSoap += '<enviaPedido xmlns="http://services.soc.syson.com.br/">'
-cSoap += WSSoapValue("PEDIDO", ::oWSPEDIDO, oWSPEDIDO , "pedido", .F. , .F., 0 , "http://services.soc.syson.com.br/", .F.)
+cSoap += WSSoapValue("PEDIDO", ::oWSPEDIDO, oWSPEDIDO , "pedido", .F. , .F., 0 ,Nil, .F.)
 cSoap += "</enviaPedido>"
 
 oXmlRet := SvcSoapCall(	Self,cSoap,;
@@ -148,7 +148,7 @@ Local cSoap := "" , oXmlRet
 BEGIN WSMETHOD
 
 cSoap += '<recebePedido xmlns="http://services.soc.syson.com.br/">'
-cSoap += WSSoapValue("PEDIDO", ::oWSPEDIDO, oWSPEDIDO , "pedido", .F. , .F., 0 , "http://services.soc.syson.com.br/", .F.)
+cSoap += WSSoapValue("PEDIDO", ::oWSPEDIDO, oWSPEDIDO , "pedido", .F. , .F., 0 , Nil, .F.)
 cSoap += "</recebePedido>"
 
 oXmlRet := SvcSoapCall(	Self,cSoap,;
@@ -166,23 +166,23 @@ Return .T.
 
 // WSDL Method enviaSolicitacao of Service WSVSService
 
-WSMETHOD enviaSolicitacao WSSEND BYREF oWSsolicitacao WSRECEIVE NULLPARAM WSCLIENT WSVSService
-Local cSoap := "" , oXmlRet
+WSMETHOD enviaSolicitacao WSSEND BYREF oWSsolicitacao WSRECEIVE oWSsolicitacao WSCLIENT WSVSService
+Local cSoap := "" , oXmlRet := Nil
 
 BEGIN WSMETHOD
 
 cSoap += '<enviaSolicitacao xmlns="http://services.soc.syson.com.br/">'
-cSoap += WSSoapValue("solicitacao", ::oWSsolicitacao, oWSsolicitacao , "solicitacao", .F. , .F., 0 , "http://services.soc.syson.com.br/", .F.)
+
+cSoap += 	WSSoapValue("solicitacao"	, ::oWSsolicitacao	, oWSsolicitacao 	, "solicitacao"	, .F. , .F., 0 , Nil, .T.)
+
 cSoap += "</enviaSolicitacao>"
-VarInfo("Objeto",cSoap )
+
 oXmlRet := SvcSoapCall(	Self,cSoap,;
-	"",;
-	"DOCUMENT","http://services.soc.syson.com.br/",,,;
-	"http://sys-on.com.br:8080/SocWebService/VS")
+	"","DOCUMENT","http://services.soc.syson.com.br/",,"1.031217","http://sys-on.com.br:8080/SocWebService/VS")
 
 ::Init()
 ::oWSsolicitacao:SoapRecv( WSAdvValue( oXmlRet,"_ENVIASOLICITACAORESPONSE:_SOLICITACAO","solicitacao",NIL,NIL,NIL,NIL,@oWSsolicitacao,NIL) )
-
+::oWSsolicitacao := XmlChildEx( oXmlRet:_NS2_ENVIASOLICITACAORESPONSE , "_SOLICITACAO" ) // Retorno
 END WSMETHOD
 
 oXmlRet := NIL
@@ -218,9 +218,10 @@ Return oClone
 
 WSMETHOD SOAPSEND WSCLIENT VSService_pedido
 	Local cSoap := ""
-	cSoap += WSSoapValue("CABECALHO", ::oWSCABECALHO, ::oWSCABECALHO , "cabecalho", .F. , .F., 0 , "vs.pedido", .F.)
-	cSoap += WSSoapValue("DETALHES", ::oWSDETALHES, ::oWSDETALHES , "itens", .F. , .F., 0 , "vs.pedido", .F.)
-	cSoap += WSSoapValue("RETORNO", ::oWSRETORNO, ::oWSRETORNO , "retorno", .F. , .F., 0 , "vs.pedido", .F.)
+	cSoap += WSSoapValue("CABECALHO", ::oWSCABECALHO, ::oWSCABECALHO , "cabecalho", .F. , .F., 0 , Nil, .F.)
+	//cSoap += WSSoapValue("DETALHES", ::oWSDETALHES, ::oWSDETALHES , "itens", .F. , .F., 0 , Nil, .F.)
+	cSoap += WSSoapValue("DETALHES", ::oWSDETALHES, ::oWSDETALHES , "itens", .T. , .F., 0 , Nil, .T.)
+	cSoap += WSSoapValue("RETORNO", ::oWSRETORNO, ::oWSRETORNO , "retorno", .F. , .F., 0 , Nil, .F.)
 Return cSoap
 
 WSMETHOD SOAPRECV WSSEND oResponse WSCLIENT VSService_pedido
@@ -280,9 +281,9 @@ Return oClone
 
 WSMETHOD SOAPSEND WSCLIENT VSService_solicitacao
 	Local cSoap := ""
-	cSoap += WSSoapValue("cabecalho", ::oWScabecalho, ::oWScabecalho , "cabecalho", .F. , .F., 0 , "vs.solicitacao", .F.)
-	aEval( ::oWSdetalhes , {|x| cSoap := cSoap  +  WSSoapValue("detalhes", x , x , "detalhes", .F. , .F., 0 , "vs.solicitacao", .F.)  } )
-	cSoap += WSSoapValue("retorno", ::oWSretorno, ::oWSretorno , "retorno", .F. , .F., 0 , "vs.solicitacao", .F.)
+	cSoap += WSSoapValue("cabecalho", ::oWScabecalho, ::oWScabecalho , "cabecalho", .F. , .F., 0 , Nil, .F.)
+	aEval( ::oWSdetalhes , {|x| cSoap := cSoap  +  WSSoapValue("detalhes", x , x , "detalhes", .F. , .F., 0 , Nil, .F.)  } )
+	cSoap += WSSoapValue("retorno", ::oWSretorno, ::oWSretorno , "retorno", .F. , .F., 0 , Nil, .F.)
 Return cSoap
 
 WSMETHOD SOAPRECV WSSEND oResponse WSCLIENT VSService_solicitacao
@@ -346,12 +347,12 @@ Return oClone
 
 WSMETHOD SOAPSEND WSCLIENT VSService_cabecalho
 	Local cSoap := ""
-	cSoap += WSSoapValue("numero", ::nnumero, ::nnumero , "int", .F. , .F., 0 , "vs.solicitacao", .F.)
-	cSoap += WSSoapValue("unidade", ::nunidade, ::nunidade , "long", .F. , .F., 0 , "vs.solicitacao", .F.)
-	cSoap += WSSoapValue("solicitante", ::csolicitante, ::csolicitante , "string", .F. , .F., 0 , "vs.solicitacao", .F.)
-	cSoap += WSSoapValue("locentrega", ::nlocentrega, ::nlocentrega , "int", .F. , .F., 0 , "vs.solicitacao", .F.)
-	cSoap += WSSoapValue("emissao", ::cemissao, ::cemissao , "string", .F. , .F., 0 , "vs.solicitacao", .F.)
-	cSoap += WSSoapValue("comprador", ::oWScomprador, ::oWScomprador , "comprador", .F. , .F., 0 , "vs.solicitacao", .F.)
+	cSoap += WSSoapValue("numero"		, ::nnumero		, ::nnumero 		, "int"			, .T. , .F., 0 , Nil, .F.)
+	cSoap += WSSoapValue("unidade"		, ::nunidade	, ::nunidade 		, "long"		, .T. , .F., 0 , Nil, .F.)
+	cSoap += WSSoapValue("solicitante"	, ::csolicitante, ::csolicitante 	, "string"		, .T. , .F., 0 , Nil, .F.)
+	cSoap += WSSoapValue("locentrega"	, ::nlocentrega	, ::nlocentrega 	, "int"			, .T. , .F., 0 , Nil, .F.)
+	cSoap += WSSoapValue("emissao"		, ::cemissao	, ::cemissao 		, "string"		, .T. , .F., 0 , Nil, .F.)
+	cSoap += WSSoapValue("comprador"	, ::oWScomprador, ::oWScomprador 	, "comprador"	, .T. , .F., 0 , Nil, .F.)
 Return cSoap
 
 WSMETHOD SOAPRECV WSSEND oResponse WSCLIENT VSService_cabecalho
@@ -400,7 +401,7 @@ Return oClone
 
 WSMETHOD SOAPSEND WSCLIENT VSService_itens
 	Local cSoap := ""
-	aEval( ::oWSN_ITEM , {|x| cSoap := cSoap  +  WSSoapValue("N_ITEM", x , x , "item", .F. , .F., 0 , "vs.pedido", .F.)  } )
+	aEval( ::oWSN_ITEM , {|x| cSoap := cSoap  +  WSSoapValue("N_ITEM", x , x , "item", .F. , .F., 0 , Nil, .F.)  } )
 Return cSoap
 
 WSMETHOD SOAPRECV WSSEND oResponse WSCLIENT VSService_itens
@@ -444,8 +445,8 @@ Return oClone
 
 WSMETHOD SOAPSEND WSCLIENT VSService_retorno
 	Local cSoap := ""
-	cSoap += WSSoapValue("ocorrencia", ::cocorrencia, ::cocorrencia , "string", .F. , .F., 0 , "vs.solicitacao", .F.)
-	cSoap += WSSoapValue("observacao", ::cobservacao, ::cobservacao , "string", .F. , .F., 0 , "vs.solicitacao", .F.)
+	cSoap += WSSoapValue("ocorrencia", ::cocorrencia, ::cocorrencia , "string", .F. , .F., 0 , Nil, .F.)
+	cSoap += WSSoapValue("observacao", ::cobservacao, ::cobservacao , "string", .F. , .F., 0 , Nil, .F.)
 Return cSoap
 
 WSMETHOD SOAPRECV WSSEND oResponse WSCLIENT VSService_retorno
@@ -494,14 +495,14 @@ Return oClone
 
 WSMETHOD SOAPSEND WSCLIENT VSService_detalhes
 	Local cSoap := ""
-	cSoap += WSSoapValue("item", ::nitem, ::nitem , "int", .F. , .F., 0 , "vs.solicitacao", .F.)
-	cSoap += WSSoapValue("produto", ::cproduto, ::cproduto , "string", .F. , .F., 0 , "vs.solicitacao", .F.)
-	cSoap += WSSoapValue("descricao", ::cdescricao, ::cdescricao , "string", .F. , .F., 0 , "vs.solicitacao", .F.)
-	cSoap += WSSoapValue("prodfor", ::cprodfor, ::cprodfor , "string", .F. , .F., 0 , "vs.solicitacao", .F.)
-	cSoap += WSSoapValue("unimed", ::cunimed, ::cunimed , "string", .F. , .F., 0 , "vs.solicitacao", .F.)
-	cSoap += WSSoapValue("quantidade", ::nquantidade, ::nquantidade , "float", .F. , .F., 0 , "vs.solicitacao", .F.)
-	cSoap += WSSoapValue("necessidade", ::cnecessidade, ::cnecessidade , "string", .F. , .F., 0 , "vs.solicitacao", .F.)
-	cSoap += WSSoapValue("obs", ::cobs, ::cobs , "string", .F. , .F., 0 , "vs.solicitacao", .F.)
+	cSoap += WSSoapValue("item", ::nitem, ::nitem , "int", .F. , .F., 0 , Nil, .F.)
+	cSoap += WSSoapValue("produto", ::cproduto, ::cproduto , "string", .F. , .F., 0 , Nil, .F.)
+	cSoap += WSSoapValue("descricao", ::cdescricao, ::cdescricao , "string", .F. , .F., 0 , Nil, .F.)
+	cSoap += WSSoapValue("prodfor", ::cprodfor, ::cprodfor , "string", .F. , .F., 0 , Nil, .F.)
+	cSoap += WSSoapValue("unimed", ::cunimed, ::cunimed , "string", .F. , .F., 0 , Nil, .F.)
+	cSoap += WSSoapValue("quantidade", ::nquantidade, ::nquantidade , "float", .F. , .F., 0 , Nil, .F.)
+	cSoap += WSSoapValue("necessidade", ::cnecessidade, ::cnecessidade , "string", .F. , .F., 0 , Nil, .F.)
+	cSoap += WSSoapValue("obs", ::cobs, ::cobs , "string", .F. , .F., 0 , Nil, .F.)
 Return cSoap
 
 WSMETHOD SOAPRECV WSSEND oResponse WSCLIENT VSService_detalhes
@@ -548,10 +549,10 @@ Return oClone
 
 WSMETHOD SOAPSEND WSCLIENT VSService_comprador
 	Local cSoap := ""
-	cSoap += WSSoapValue("codigo", ::ncodigo, ::ncodigo , "int", .F. , .F., 0 , "vs.solicitacao", .F.)
-	cSoap += WSSoapValue("nome", ::cnome, ::cnome , "string", .F. , .F., 0 , "vs.solicitacao", .F.)
-	cSoap += WSSoapValue("fone", ::cfone, ::cfone , "string", .F. , .F., 0 , "vs.solicitacao", .F.)
-	cSoap += WSSoapValue("email", ::cemail, ::cemail , "string", .F. , .F., 0 , "vs.solicitacao", .F.)
+	cSoap += WSSoapValue("codigo", ::ncodigo, ::ncodigo , "int", .F. , .F., 0 , Nil, .F.)
+	cSoap += WSSoapValue("nome", ::cnome, ::cnome , "string", .F. , .F., 0 , Nil, .F.)
+	cSoap += WSSoapValue("fone", ::cfone, ::cfone , "string", .F. , .F., 0 , Nil, .F.)
+	cSoap += WSSoapValue("email", ::cemail, ::cemail , "string", .F. , .F., 0 , Nil, .F.)
 Return cSoap
 
 WSMETHOD SOAPRECV WSSEND oResponse WSCLIENT VSService_comprador
@@ -608,17 +609,17 @@ Return oClone
 
 WSMETHOD SOAPSEND WSCLIENT VSService_item
 	Local cSoap := ""
-	cSoap += WSSoapValue("ITEM", ::nITEM, ::nITEM , "int", .F. , .F., 0 , "vs.pedido", .F.)
-	cSoap += WSSoapValue("PRODUTO", ::cPRODUTO, ::cPRODUTO , "string", .F. , .F., 0 , "vs.pedido", .F.)
-	cSoap += WSSoapValue("PRODFOR", ::cPRODFOR, ::cPRODFOR , "string", .F. , .F., 0 , "vs.pedido", .F.)
-	cSoap += WSSoapValue("UNIMED", ::cUNIMED, ::cUNIMED , "string", .F. , .F., 0 , "vs.pedido", .F.)
-	cSoap += WSSoapValue("QUANTIDADE", ::cQUANTIDADE, ::cQUANTIDADE , "string", .F. , .F., 0 , "vs.pedido", .F.)
-	cSoap += WSSoapValue("PRCUNIT", ::cPRCUNIT, ::cPRCUNIT , "string", .F. , .F., 0 , "vs.pedido", .F.)
-	cSoap += WSSoapValue("TOTAL", ::cTOTAL, ::cTOTAL , "string", .F. , .F., 0 , "vs.pedido", .F.)
-	cSoap += WSSoapValue("DATAENTR", ::cDATAENTR, ::cDATAENTR , "string", .F. , .F., 0 , "vs.pedido", .F.)
-	cSoap += WSSoapValue("OBS", ::cOBS, ::cOBS , "string", .F. , .F., 0 , "vs.pedido", .F.)
-	cSoap += WSSoapValue("NUMSC", ::nNUMSC, ::nNUMSC , "int", .F. , .F., 0 , "vs.pedido", .F.)
-	cSoap += WSSoapValue("ITEMSC", ::nITEMSC, ::nITEMSC , "int", .F. , .F., 0 , "vs.pedido", .F.)
+	cSoap += WSSoapValue("ITEM", ::nITEM, ::nITEM , "int", .F. , .F., 0 , Nil, .F.)
+	cSoap += WSSoapValue("PRODUTO", ::cPRODUTO, ::cPRODUTO , "string", .F. , .F., 0 , Nil, .F.)
+	cSoap += WSSoapValue("PRODFOR", ::cPRODFOR, ::cPRODFOR , "string", .F. , .F., 0 , Nil, .F.)
+	cSoap += WSSoapValue("UNIMED", ::cUNIMED, ::cUNIMED , "string", .F. , .F., 0 , Nil, .F.)
+	cSoap += WSSoapValue("QUANTIDADE", ::cQUANTIDADE, ::cQUANTIDADE , "string", .F. , .F., 0 , Nil, .F.)
+	cSoap += WSSoapValue("PRCUNIT", ::cPRCUNIT, ::cPRCUNIT , "string", .F. , .F., 0 , Nil, .F.)
+	cSoap += WSSoapValue("TOTAL", ::cTOTAL, ::cTOTAL , "string", .F. , .F., 0 , Nil, .F.)
+	cSoap += WSSoapValue("DATAENTR", ::cDATAENTR, ::cDATAENTR , "string", .F. , .F., 0 , Nil, .F.)
+	cSoap += WSSoapValue("OBS", ::cOBS, ::cOBS , "string", .F. , .F., 0 , Nil, .F.)
+	cSoap += WSSoapValue("NUMSC", ::nNUMSC, ::nNUMSC , "int", .F. , .F., 0 , Nil, .F.)
+	cSoap += WSSoapValue("ITEMSC", ::nITEMSC, ::nITEMSC , "int", .F. , .F., 0 , Nil, .F.)
 Return cSoap
 
 WSMETHOD SOAPRECV WSSEND oResponse WSCLIENT VSService_item

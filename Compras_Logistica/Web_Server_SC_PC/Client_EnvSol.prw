@@ -133,16 +133,24 @@ User function Client_EnvSol()
 	oDetalhes:cnecessidade	:= aDetalhes[SC_DT07]
 	oDetalhes:cobs        	:= aDetalhes[SC_DT08]
 
-	oSolicitacao:oWScabecalho 	:= oCabecalho
-	Aadd(oSolicitacao:oWSdetalhes,oDetalhes)
-	oSolicitacao:oWSretorno 	:= oRetorno
+	//oSolicitacao:oWScabecalho 	:= oCabecalho
+	//Aadd(oSolicitacao:oWSdetalhes,oDetalhes)
+	//oSolicitacao:oWSretorno 	:= oRetorno
+	oWsEnvSol:oWsSolicitacao:oWsCabecalho := oCabecalho
+	Aadd(oWsEnvSol:oWsSolicitacao:oWSdetalhes,oDetalhes)
+	oWsEnvSol:oWsSolicitacao:oWSretorno := oRetorno
 
-	lRetorno := oWsEnvSol:enviaSolicitacao(oSolicitacao)
+	lRetorno := oWsEnvSol:enviaSolicitacao(oWsEnvSol:oWsSolicitacao)
 
 	//VarInfo("Objeto", oWsEnvSol:enviaSolicitacao:oXmlRet)
 
 	If lRetorno
-		Alert("[enviaSolicitacao] Executado com Sucesso")
+
+		cOcorrencia := AllTrim(oWsEnvSol:oWsSolicitacao:_RETORNO:_OCORRENCIA:TEXT)
+		cObservacao := AllTrim(oWsEnvSol:oWsSolicitacao:_RETORNO:_OBSERVACAO:TEXT)
+
+		IW_MsgBox("Ocorrencia: "+ Iif(cOcorrencia=="S","Recebido","Não Recebido")  + _ENTER +;
+				  "Observação: "+ cObservacao , "Transmitido com Sucesso", iif(cOcorrencia=="S","INFO","ALERT") )
 	Else
 		cSvcError   := GetWSCError()  // Resumo do erro
 		cSoapFCode  := GetWSCError(2)  // Soap Fault Code
