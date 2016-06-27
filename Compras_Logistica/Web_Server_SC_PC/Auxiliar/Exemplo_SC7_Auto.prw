@@ -23,10 +23,10 @@
 #Define AD_VLDESC		12
 
 *******************************************************************************
-User function Exemplo_SC7_Auto(_aCab,_aDet)
+User function PC_SC7_Auto(_aCab,_aDet)
 *******************************************************************************
 
-
+/*
 	_aCab[ACNUM] := GetSX8Num("SC7","C7_NUM")
 
 	aCab := {{"C7_NUM"			,_aCab[ACNUM]	,nil},;
@@ -46,24 +46,22 @@ User function Exemplo_SC7_Auto(_aCab,_aDet)
 					 {"C7_TOTAL"  	,_aDet[nD][AD_TOTAL]	,nil},;
 					 {"C7_DATPRF"	,_aDet[nD][AD_DATPRF]	,nil},;
 					 {"C7_TES"    	,_aDet[nD][AD_TES]		,nil},;
-					 {"C7_FLUXO"  	,_aDet[nD][AD_FLUXO]	,nil},;
-					 {"C7_LOCAL"	,_aDet[nD][AD_LOCAL]	,nil},;
-					 {"C7_CODRDA"   ,_aDet[nD][AD_CODRDA]	,nil},;
-					 {"C7_LOTPLS"   ,_aDet[nD][AD_LOTPLS]	,nil},;
-					 {"C7_VLDESC"   ,_aDet[nD][AD_VLDESC]   ,nil}})
+					 {"C7_LOCAL"	,_aDet[nD][AD_LOCAL]	,nil}})
 
 	Next nD
+*/
+	If Len(_aDet) > 0
 
-	If Len(aItens) > 0
+		lMsHelpAuto := .T.
+		lMsErroAuto := .F.
+		MsExecAuto({|X,Y,Z,W| MATA120(X,Y,Z,W)},1, _aCab, _aDet, 3)
+		SC7->(ConfirmSX8())
 
-	lMsHelpAuto := .T.
-	lMsErroAuto := .F.
-	MsExecAuto({|X,Y,Z,W| MATA120(X,Y,Z,W)},1, aCab, aItens, 3)
-	SC7->(ConfirmSX8())
+		If lMsErroAuto //SE NAO HOUVE ERRO
+			lOK:=.F.
+			MostraErro()
+		EndIf
+	EndIf
 
-	IF lMsErroAuto //SE NAO HOUVE ERRO
-	lOK:=.F.
-	MostraErro()
-	ENDIF
 
 Return()
