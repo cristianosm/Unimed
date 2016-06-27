@@ -14,14 +14,12 @@
 WsService WS_PEDCOM Description "WS Integracao Protheus x Syson - Recebe Pedido de Compras" NAMESPACE "http://172.22.0.185:81/ws/"
 *******************************************************************************
 
-
 	WsData Pedido	As SPC_Pedido
 	WsData oRetorno	As SPC_RPedido
 
 	WsMethod RecebePedido Description	"Metodo que recebe o Pedido de Compras apartir do Sys-on"
 
 EndWsService
-
 *******************************************************************************
 WsMethod RecebePedido WsReceive Pedido WsSend oRetorno WsService WS_PEDCOM //| Metodo Recebe Pedido de Compras
 *******************************************************************************
@@ -61,7 +59,7 @@ WsMethod RecebePedido WsReceive Pedido WsSend oRetorno WsService WS_PEDCOM //| M
 	cNumSc7 := GetSX8Num("SC7","C7_NUM") //"A12875"
 
 		aAdd(aCab, {'C7_NUM'	, cNumSc7 					/*SC7->C7_NUM*/		, Nil})	//--Numero do Pedido
-		aAdd(aCab, {'C7_EMISSAO', Pedido:Cabecalho:Emissao 	/*SC7->C7_EMISSAO*/	, Nil})	//--Data de Emissao
+		aAdd(aCab, {'C7_EMISSAO', StoD(Pedido:Cabecalho:Emissao)	/*SC7->C7_EMISSAO*/	, Nil})	//--Data de Emissao
 		aAdd(aCab, {'C7_FORNECE', cFornece 					/*SC7->C7_FORNECE*/	, Nil})	//--Fornecedor
 		aAdd(aCab, {'C7_LOJA'	, cLoja 					/*SC7->C7_LOJA*/	, Nil})	//--Loja do Fornecedor
 		aAdd(aCab, {'C7_CONTATO', Pedido:Cabecalho:Contato 	/*SC7->C7_CONTATO*/ , Nil})	//--Contato
@@ -72,20 +70,19 @@ WsMethod RecebePedido WsReceive Pedido WsSend oRetorno WsService WS_PEDCOM //| M
 	For nPC := 1 to len(Pedido:Detalhes)
 
 		oItem := Pedido:Detalhes[nPC]
-//TamSx3("C7_VLDESC")[2])
+
 		aadd(aDet,{{"C7_ITEM"   	,StrZero(oItem:Item,4)	,nil},;
-					 {"C7_PRODUTO"	,oItem:Produto			,nil},;
+					 {"C7_PRODUTO"	,RetProd(oItem:ProdFor)	,nil},;
 					 {"C7_CLVL"		,"0900001"				,nil},;
 					 {"C7_QUANT"  	,oItem:Quantidade		,nil},;
 					 {"C7_PRECO"  	,oItem:PrcUnit			,nil},;
 					 {"C7_TOTAL"  	,oItem:Total			,nil},;
-					 {"C7_DATPRF"	,oItem:DataEntr			,nil},;
+					 {"C7_DATPRF"	,StoD(oItem:DataEntr)	,nil},;
 					 {"C7_OBS"    	,oItem:Obs				,nil},;
 					 {"C7_NUMSC"   	,StrZero(oItem:NumSC,6)	,nil},;
 					 {"C7_ITEMSC"  	,StrZero(oItem:ItemSC,4),nil},;
 					 {"C7_CC"    	,"11813"				,nil},;
 					 {"C7_LOCAL"	,"01"					,nil}})
-					 //{"C7_TES"    	,"001"			,nil},;
 
 	Next nPC
 
@@ -98,7 +95,7 @@ WsMethod RecebePedido WsReceive Pedido WsSend oRetorno WsService WS_PEDCOM //| M
 			cTxtLog := NomeAutoLog()
 			If ValType( cTxtLog ) == 'C'
 				cTxtAux 	:= ( Memoread( cTxtLog ) )
-				conout 		:= cTxtAux
+				conout(cTxtAux)
 				cTxtAux     := StrTran(cTxtAux,ENTER," ")
 				cTxtSea := "  "
 				While AT( cTxtSea, cTxtAux ) > 0
@@ -113,6 +110,7 @@ WsMethod RecebePedido WsReceive Pedido WsSend oRetorno WsService WS_PEDCOM //| M
 		End Transaction
 	EndIf
 	SC7->(ConfirmSX8())
+
 	//U_PC_SC7_Auto(aCab,aDet)
 	/*If Len(aDet) > 0
 
@@ -161,6 +159,14 @@ WsMethod RecebePedido WsReceive Pedido WsSend oRetorno WsService WS_PEDCOM //| M
 
 Return lReturn
 *******************************************************************************
+Static Function RetProd(CProdFor)//| Retorno de Ocorrencia do Recebimento do Pedido
+*******************************************************************************
+	Local cProduto
+
+	cProduto := Alltrim( Posicione("SA5",14,xFilial("SA5")+"AS005201"+CProdFor,"A5_PRODUTO"))
+	
+Return(cProduto)
+*******************************************************************************
 WSSTRUCT  SPC_RPedido//| Retorno de Ocorrencia do Recebimento do Pedido
 *******************************************************************************
 
@@ -184,7 +190,7 @@ WSSTRUCT SPC_Ocorrencia //| Ocorrencia do Recebimento do Pedido
 ENDWSSTRUCT
 *******************************************************************************
 WSSTRUCT SPC_Pedido //| Pedido de Compras
-	*******************************************************************************
+*******************************************************************************
 
 	WsData Cabecalho		As SPC_Cabecalho
 	WsData Detalhes		   	As Array of N_ITEM
@@ -192,19 +198,19 @@ WSSTRUCT SPC_Pedido //| Pedido de Compras
 ENDWSSTRUCT
 *******************************************************************************
 WSSTRUCT SPC_Cabecalho //| Cabecalho do Pedido de compras
-	*******************************************************************************
+*******************************************************************************
 
-	WsData Emissao		   	As Date
+	WsData Emissao		   	As String
 	WsData Fornecedor	  	As Integer
 	WsData CondPag		   	As String
-	WsData Contato		   	As String
+	WsData Contato		   	As String       Optional
 	WsData UnidadeSol	   	As Integer 		Optional
 	WsData Frete		   	As SPC_Frete 	Optional
 
 ENDWSSTRUCT
 *******************************************************************************
 WSSTRUCT SPC_Frete // Frete do Pedido de compras
-	*******************************************************************************
+*******************************************************************************
 
 	WsData Cnpj		      	As Integer 	Optional
 	WsData Nome		      	As String 	Optional
@@ -215,7 +221,7 @@ WSSTRUCT SPC_Frete // Frete do Pedido de compras
 ENDWSSTRUCT
 *******************************************************************************
 WSSTRUCT N_ITEM //| Cabecalho do Pedido de compras
-	*******************************************************************************
+*******************************************************************************
 
 	WsData Item		      	As Integer
 	WsData Produto	      	As String 	Optional
@@ -224,7 +230,7 @@ WSSTRUCT N_ITEM //| Cabecalho do Pedido de compras
 	WsData Quantidade		As Float
 	WsData PrcUnit	      	As Float
 	WsData Total         	As Float
-	WsData DataEntr       	As Date
+	WsData DataEntr       	As String
 	WsData Obs	         	As String 	Optional
 	WsData NumSC	       	As Integer
 	WsData ItemSC           As Integer

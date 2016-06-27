@@ -1,102 +1,85 @@
-#include 'protheus.ch'
-#include 'parmtype.ch'
-#include "apwebsrv.ch"
-#include 'Totvs.ch'
-
-#Define SC_CA00 	1
-#Define SC_DT00 	2
-
-#Define SC_CA01 	1
-#Define SC_CA02		2
-#Define SC_CA03 	3
-#Define SC_CA04   	4
-#Define SC_CA05		5
-#Define SC_CA06		6
-#Define SC_CA07		7
-
-#Define SC_CO01		1
-#Define SC_CO02		2
-#Define SC_CO03		3
-#Define SC_CO04		4
-
-#Define SC_DT01		1
-#Define SC_DT02		2
-#Define SC_DT03		3
-#Define SC_DT04		4
-#Define SC_DT05		5
-#Define SC_DT06		6
-#Define SC_DT07		7
-#Define SC_DT08		8
-#Define SC_DT09		9
+#Include 'protheus.ch'
+#Include 'parmtype.ch'
+#Include "apwebsrv.ch"
+#Include 'Totvs.ch'
 
 #Define _ENTER		CHR(13)+CHR(10)
 
-#Define NAOR		"N" //|Solicitação Não Recebida no Sys-On
-#Define SIMR		"S" //|Solicitação Não Recebida no Sys-On
+#Define NAOR		"N" //|Solicitacao nao Recebida no Sys-On
+#Define SIMR		"S" //|Solicitacao nao Recebida no Sys-On
 
+/*****************************************************************************\
+**---------------------------------------------------------------------------**
+** FUNÃ‡ÃƒO   :Client_EnvSol | AUTOR : Cristiano Machado  | DATA : 18/02/2016  **
+**---------------------------------------------------------------------------**
+** DESCRIÃ‡ÃƒO:Envia SolcitaÃ§Ã£o de Compras ao Sys-on AtravÃ©s do WS_Client_SysOn**
+**---------------------------------------------------------------------------**
+** USO      : Especifico para o cliente Unimed Vale do Sinos                 **
+**---------------------------------------------------------------------------**
+**---------------------------------------------------------------------------**
+**            ATUALIZACOES SOFRIDAS DESDE A CONSTRUCAO INICIAL.              **
+**---------------------------------------------------------------------------**
+**   PROGRAMADOR   |   DATA   |            MOTIVO DA ALTERACAO               **
+**---------------------------------------------------------------------------**
+**                 |          |                                              **
+**                 |          |                                              **
+\*---------------------------------------------------------------------------*/
 *******************************************************************************
 User function Client_EnvSol()
 *******************************************************************************
 
+	Private cNumSol	:= SC1->C1_NUM
+	Private nRecSC1	:= 0 			// Salva o Recno do Item 0001
+	Private cForeLj	:= "AS005201" 	// Unimed Central loja 01
+	
+	Private oProcess 	:= Nil
+	Private lEnd 		:= Nil
+	
+	oProcess := MsNewProcess():New( {|lEnd| Transmissao()(@oProcess, @lEnd)} , "Transmitindo Solicitacao..."+cNumSol, "", .T. )
+	oProcess:Activate()
+	
+Return()
+*******************************************************************************
+Static function Transmissao()//| Funcao Principal 
+*******************************************************************************
+
 	Local oWsEnvSol := WSVSService():New()	//| Objeto Estrutura WsService. Baseado em Layout v1.2
 	Local cRetOcor	:= SIMR					//| Ocorrencia de Retorno
-	Local cRetObs	:= ""					//| Observação de Retorno
+	Local cRetObs	:= ""					//| Observacao de Retorno
 	Local aAreaSC1	:= GetArea()
+	
+	oProcess:SetRegua1(5)
+	oProcess:SetRegua2(0)
+	
+	//| Obtem Dados do Cliente  
+	oProcess:IncRegua1("Validando Solicitacao...")
+	If ValidaEnvio(@cRetOcor,@cRetObs) //| Pre-Validacoes para Envio |
 
-	Private cNumSol	:= SC1->C1_NUM
-	Private nRecSC1	:= 0 // Salva o Recno do Item 0001
-	Private cForeLj	:= "AS005201" // Unimed Central loja 01
+		oProcess:IncRegua1("Montando Solicitacao para Envio...")
+		MSolicitacao(@oWsEnvSol) //| Monta os Dados da Solicitacao e Alimenta o Ws-Envelope
 
-	If ValidaEnvio(@cRetOcor,@cRetObs) //| Pre-Validações para Envio |
+		oProcess:IncRegua1("Enviando Solicitacao ao Sys-On...")
+		ESolicitacao(@oWsEnvSol,@cRetOcor,@cRetObs) //| Envia o Envelope com a Solicitacao
 
-		MSolicitacao(@oWsEnvSol) //| Monta os Dados da Solicitação e Alimenta o Ws-Envelope
-
-		ESolicitação(@oWsEnvSol,@cRetOcor,@cRetObs) //| Envia a Solicitação
-
-		If cRetOcor == NAOR 	// Solicitação não Recebida....
+		oProcess:IncRegua1("Analisando Retorno do Sys-On...")
+		If cRetOcor == NAOR 	// Solicitacao nao Recebida....
 			ShowErr(cRetObs)
-		ElseIf cRetOcor == SIMR // Solicitação Recebida....
+		ElseIf cRetOcor == SIMR // Solicitacao Recebida....
 			ShowOk(cRetObs)
 		EndIF
 
 	Else
+		oProcess:IncRegua1("Erros Identificados...")
 		ShowErr(cRetObs) // Apresenta Mensagem de Erro.
 	EndIf
 
 	RestArea(aAreaSC1)
 Return()
 *******************************************************************************
-Static Function  ShowErr(cRetObs)// Solicitação não Recebida....
+Static Function ValidaEnvio(cRetOcor,cRetObs) //| Pre-Validacoes para Envio |
 *******************************************************************************
-
-	Local cTexto := "Solcitacao: " + cNumSol + " nao recebida no Sys-On... " + _ENTER + _ENTER + "Motivo: " + cRetObs
-
-	Define FONT oFont NAME "Tahoma" Size 8,15
-	Define MsDialog oDlgMemo Title "Solicitação Não Transmitida com Sucesso!!! " From 3,0 to 340,550 Pixel
-
-	@ 5,5 Get oMemo  Var cTexto MEMO Size 265,145 Of oDlgMemo Pixel
-	oMemo:bRClicked := {||AllwaysTrue()}
-	oMemo:oFont:=oFont
-
-	Define SButton  From 153,245 Type 1 Action oDlgMemo:End() Enable Of oDlgMemo Pixel
-
-	Activate MsDialog oDlgMemo Center
-
-Return()
-*******************************************************************************
-Static Function  ShowOk(cRetObs)// Solicitação não Recebida....
-*******************************************************************************
-
-	Local cTexto := "Solcitacao: " + cNumSol + " recebida no Sys-On Com Sucesso... " + _ENTER + _ENTER + "Obs: " + cRetObs
-
-	Iw_MsgBox(cTexto,"Transmissao","INFO")
-
-Return()
-*******************************************************************************
-Static Function ValidaEnvio(cRetOcor,cRetObs) //| Pre-Validações para Envio |
-*******************************************************************************
-//| Solicitação só pode ser enviada após estar Aprovada no Protheus.
-//| Durante a confecção da Solicitação de Compras, verificar se existe o relacionamento Produto X Fornecedor com a UNIMED CENTRAL
+//| Solicitacao so pode ser enviada apos estar Aprovada no Protheus.
+//| Durante a confeccao da Solicitacao de Compras, verificar se existe o relacionamento Produto X Fornecedor com a UNIMED CENTRAL
 	Local bVNIEnter := {|| cRetObs += If(Empty(cRetObs),"",_ENTER) }
 
 	DbSelectArea("SC1");DbSetOrder(1)
@@ -109,18 +92,18 @@ Static Function ValidaEnvio(cRetOcor,cRetObs) //| Pre-Validações para Envio |
 
 	If SC1->C1_INTWSO <> "S"
 		cRetOcor := "N" ;eVal(bVNIEnter)
-		cRetObs := "Esta Solicitação não se trata de uma Solicitação que pode ser transmitid ao Sys-On.. O->Outros ..."
+		cRetObs := "Esta Solicitacao nao se trata de uma Solicitacao que pode ser transmitid ao Sys-On.. O->Outros ..."
 		Return(.F.)
 	EndIf
 
 	If SC1->C1_APROV <> "L"
 		cRetOcor := "N" ;eVal(bVNIEnter)
-		cRetObs += "Esta Solicitação não esta Aprovada, por favor faça a Liberação antes de Transmitir..."
+		cRetObs += "Esta Solicitacao nao esta Aprovada, por favor faca a Liberacao antes de Transmitir..."
 	EndIF
 
 	If SC1->C1_TX == 'TR'
 		cRetOcor := "N" ;eVal(bVNIEnter)
-		cRetObs += "Esta Solicitação ja foi Transmitida ao Sys-On..."
+		cRetObs += "Esta Solicitacao ja foi Transmitida ao Sys-On..."
 	Else
 
 		// Valida Prod x Fornecedor
@@ -145,7 +128,34 @@ Static Function ValidaEnvio(cRetOcor,cRetObs) //| Pre-Validações para Envio |
 
 Return(.T.)
 *******************************************************************************
-Static Function AComprador(oComprador)
+Static Function MSolicitacao(oWsEnvSol)//| Monta a Solicitacao no Envelope WS
+*******************************************************************************
+
+	IniStruct(@oWsEnvSol) //| Inicializa as Estrutura
+
+	AComprador(@oWsEnvSol:oWsSolicitacao:oWsCabecalho:oWsComprador) //| Alimenta Dados do Comprador
+
+	ACabecalho(@oWsEnvSol:oWsSolicitacao:oWsCabecalho) //| Alimenta Dados do Cabecalho
+
+	ADetalhes(@oWsEnvSol:oWsSolicitacao:oWsDetalhes) //| Alimenta os Detalhes com os Itens
+
+Return()
+*******************************************************************************
+Static Function IniStruct(oWsEnvSol)//| Inicializa as Estrutura
+*******************************************************************************
+
+	// Inicaliza as Estruturas
+	oWsEnvSol:oWsSolicitacao:oWsCabecalho	 			:= VSService_cabecalho():New()
+
+	oWsEnvSol:oWsSolicitacao:oWsCabecalho:oWsComprador	:= VSService_comprador():New()
+
+	oWsEnvSol:oWsSolicitacao:oWsDetalhes	 			:= {}
+
+	oWsEnvSol:oWsSolicitacao:oWsRetorno	 				:= VSService_retorno():New()
+
+Return()
+*******************************************************************************
+Static Function AComprador(oComprador)//| Alimenta Dados do Comprador
 *******************************************************************************
 
   	oComprador:ncodigo      := Val(SC1->C1_CODCOMP)
@@ -155,7 +165,7 @@ Static Function AComprador(oComprador)
 
 Return()
 *******************************************************************************
-Static Function ACabecalho(oCabecalho)
+Static Function ACabecalho(oCabecalho)//| Alimenta Dados do Cabecalho
 *******************************************************************************
 
 	oCabecalho:nnumero      := Val( cNumSol )
@@ -166,7 +176,7 @@ Static Function ACabecalho(oCabecalho)
 
 Return()
 *******************************************************************************
-Static Function ADetalhes(oDetalhes)
+Static Function ADetalhes(oDetalhes)//| Alimenta os Detalhes com os Itens
 *******************************************************************************
 	Local oDetAux	:=  VSService_detalhes():New()
 
@@ -193,125 +203,7 @@ Static Function ADetalhes(oDetalhes)
 
 Return()
 *******************************************************************************
-Static Function IniStruct(oWsEnvSol)
-*******************************************************************************
-
-	// Inicaliza as Estruturas
-	oWsEnvSol:oWsSolicitacao:oWsCabecalho	 			:= VSService_cabecalho():New()
-
-	oWsEnvSol:oWsSolicitacao:oWsCabecalho:oWsComprador	:= VSService_comprador():New()
-
-	oWsEnvSol:oWsSolicitacao:oWsDetalhes	 			:= {}
-
-	oWsEnvSol:oWsSolicitacao:oWsRetorno	 				:= VSService_retorno():New()
-
-Return()
-*******************************************************************************
-Static Function MSolicitacao(oWsEnvSol)
-*******************************************************************************
-
-	IniStruct(@oWsEnvSol) //| Inicializa as Estrutura
-
-	AComprador(@oWsEnvSol:oWsSolicitacao:oWsCabecalho:oWsComprador) //| Alimenta Dados do Comprador
-
-	ACabecalho(@oWsEnvSol:oWsSolicitacao:oWsCabecalho) //| Alimenta Dados do Cabecalho
-
-	ADetalhes(@oWsEnvSol:oWsSolicitacao:oWsDetalhes) //| Alimenta os Detalhes com os Itens
-
-Return()
-
-/*
-	Local aSolicitacao 	:= {Nil,Nil}
-	Local aCabecalho 	:= {Nil,Nil,Nil,Nil,Nil,Nil,Nil}
-	Local aComprador 	:= {Nil,Nil,Nil,Nil}
-	Local aDetalhes 	:= {Nil,Nil,Nil,Nil,Nil,Nil,Nil,Nil,Nil}
-
-	Local oSolicitacao	:= Nil
-	Local oCabecalho	:= Nil
-	Local oComprador	:= Nil
-	Local oDetalhes		:= Nil
-	Local oRetorno		:= Nil
-
-	Local cSolicitacao	:= Nil
-	Local cRetorno
-	Local lRetorno
-	Local cError		:= ""
-	Local cWarning		:= ""
-
-
-	//WSDLParser (
-	/*
-	Local cWSDL :=  "http://sys-on.com.br:8080/SocWebService/VS?wsdl"
-	Local aLocalType := {}
-	Local aLocalMsg  := {}
-	Local aLocalPort := {}
-	Local aLocalBind := {}
-	Local aLocalServ := {}
-	Local aLocalName := {}
-	Local aLocalImport := {}
-
-
-	aComprador[SC_CO01] := 32
-	aComprador[SC_CO02] := "Alexandre Machado"
-	aComprador[SC_CO03] := "51 9999-9999"
-	aComprador[SC_CO04] := "alex.machado@unimed-vs.com.br"
-
-	aCabecalho[SC_CA01] := 756469
-	aCabecalho[SC_CA02] := 88258884000120
-	aCabecalho[SC_CA03] := "Cristiano Machado"
-	aCabecalho[SC_CA04] := 13
-	aCabecalho[SC_CA05] := DtoS(Date())
-	aCabecalho[SC_CA06] := aComprador
-
-	aDetalhes[SC_DT01]	:= 1
-	aDetalhes[SC_DT02]	:= "UNIF129"
-	aDetalhes[SC_DT03]	:= "ESPARADRAPO 10CMX4,5M REF.198973 CREMER"
-	aDetalhes[SC_DT04]	:= "MHMG053" //??
-	aDetalhes[SC_DT05]	:= "UN"
-	aDetalhes[SC_DT06]	:= 10
-	aDetalhes[SC_DT07]	:= DtoS(Date()+7)
-	aDetalhes[SC_DT08]	:= "Observacao"
-	aDetalhes[SC_DT09]	:= "Justificativa"
-	//Um material: 10170 - esparadrapo 05cm x 4,5m 1x12
-	aSolicitacao[SC_CA00] := aCabecalho
-	aSolicitacao[SC_DT00] := aDetalhes
-
-	// Criando o objeto Web Service
-	oWsEnvSol := WSVSService():New()
-
-	//oSolicitacao := VSService_solicitacao():New()
-	oCabecalho	 := VSService_cabecalho():New()
-	oComprador	 := VSService_comprador():New()
-	oDetalhes	 := VSService_detalhes():New()
-    oRetorno	 := VSService_retorno():New()
-
-   	oComprador:ncodigo      := aComprador[SC_CO01]
-	oComprador:cnome        := aComprador[SC_CO02]
-	oComprador:cfone       	:= aComprador[SC_CO03]
-	oComprador:cemail      	:= aComprador[SC_CO04]
-
-    oCabecalho:nnumero      := aCabecalho[SC_CA01]
-	oCabecalho:nunidade     := aCabecalho[SC_CA02]
-	oCabecalho:csolicitante := aCabecalho[SC_CA03]
-	oCabecalho:nlocentrega  := aCabecalho[SC_CA04]
-	oCabecalho:cemissao     := aCabecalho[SC_CA05]
-	oCabecalho:oWScomprador := oComprador
-
-    oDetalhes:nitem			:= aDetalhes[SC_DT01]
-	oDetalhes:cproduto		:= aDetalhes[SC_DT02]
-	oDetalhes:cdescricao	:= aDetalhes[SC_DT03]
-	oDetalhes:cprodfor  	:= aDetalhes[SC_DT04]
-	oDetalhes:cunimed   	:= aDetalhes[SC_DT05]
-	oDetalhes:nquantidade	:= aDetalhes[SC_DT06]
-	oDetalhes:cnecessidade	:= aDetalhes[SC_DT07]
-	oDetalhes:cobs        	:= aDetalhes[SC_DT08]
-
-	oWsEnvSol:oWsSolicitacao:oWsCabecalho := oCabecalho
-	Aadd(oWsEnvSol:oWsSolicitacao:oWSdetalhes,oDetalhes)
-	oWsEnvSol:oWsSolicitacao:oWSretorno := oRetorno
-*/
-*******************************************************************************
-Static Function ESolicitação(oWsEnvSol,cRetOcor,cRetObs)
+Static Function ESolicitacao(oWsEnvSol,cRetOcor,cRetObs)//| Envia o Envelope com a Solicitacao
 *******************************************************************************
 
 	WSDLDbgLevel( 3 )
@@ -324,8 +216,8 @@ Static Function ESolicitação(oWsEnvSol,cRetOcor,cRetObs)
 		cRetOcor := AllTrim(oWsEnvSol:oWsSolicitacao:_RETORNO:_OCORRENCIA:TEXT)
 		cRetObs  := AllTrim(oWsEnvSol:oWsSolicitacao:_RETORNO:_OBSERVACAO:TEXT)
 
-		///IW_MsgBox("Ocorrencia: "+ Iif(cOcorrencia=="S","Recebido","Não Recebido")  + _ENTER +;
-		//	  "Observação: "+ cObservacao , "Transmitido com Sucesso", iif(cOcorrencia=="S","INFO","ALERT") )
+		///IW_MsgBox("Ocorrencia: "+ Iif(cOcorrencia=="S","Recebido","nao Recebido")  + _ENTER +;
+		//	  "Observacao: "+ cObservacao , "Transmitido com Sucesso", iif(cOcorrencia=="S","INFO","ALERT") )
 	Else
 
 		cRetOcor	:= "N"
@@ -339,48 +231,32 @@ Static Function ESolicitação(oWsEnvSol,cRetOcor,cRetObs)
 
 Return()
 *******************************************************************************
-Static Function MontaXml(aSolicitacao)
+Static Function  ShowErr(cRetObs)// Solicitacao nao Recebida....
 *******************************************************************************
-Local cXml := ""
+
+	Local cTexto := "Solcitacao: " + cNumSol + " nao recebida no Sys-On... " + _ENTER + _ENTER + "Motivo: " + cRetObs
+
+	Define FONT oFont NAME "Tahoma" Size 8,15
+	Define MsDialog oDlgMemo Title "Solicitacao nao Transmitida !!! " From 3,0 to 340,550 Pixel
+
+	@ 5,5 Get oMemo  Var cTexto MEMO Size 265,145 Of oDlgMemo Pixel
+	oMemo:bRClicked := {||AllwaysTrue()}
+	oMemo:oFont:=oFont
+
+	Define SButton  From 153,245 Type 1 Action oDlgMemo:End() Enable Of oDlgMemo Pixel
+
+	Activate MsDialog oDlgMemo Center
+
+Return()
+*******************************************************************************
+Static Function  ShowOk(cRetObs)// Solicitacao nao Recebida....
+*******************************************************************************
+
+	Local cTexto := "Solcitacao: " + cNumSol + " recebida no Sys-On Com Sucesso... " + _ENTER + _ENTER + "Obs: " + cRetObs
+
+	Iw_MsgBox(cTexto,"Transmissao","INFO")
 
 
-//	cXml += '<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ser="http://services.soc.syson.com.br/">' + _ENTER
-// 	cXml += '<soapenv:Header/> ' + _ENTER
-// 	cXml += '<soapenv:Body> ' + _ENTER
-// 	cXml += '	<ser:enviaSolicitacao> ' + _ENTER
- 	cXml += '		<solicitacao> ' + _ENTER
- 	cXml += '			<cabecalho> ' + _ENTER
- 	cXml += '				<numero>756469</numero> ' + _ENTER
- 	cXml += '				<unidade>88258884000120</unidade> ' + _ENTER
- 	cXml += '				<solicitante>"Cristiano Machado"</solicitante> ' + _ENTER
-    cXml += '				<locentrega>13</locentrega> ' + _ENTER
-    cXml += '				<emissao>20160622</emissao> ' + _ENTER
-    cXml += '				<comprador> ' + _ENTER
-    cXml += '					<codigo>32</codigo> ' + _ENTER
-    cXml += '					<nome>"Alexandre Machado"</nome> ' + _ENTER
-    cXml += '					<fone>"51 9999-9999"</fone> ' + _ENTER
-    cXml += '					<email>"alex.machado@unimed-vs.com.br"</email> ' + _ENTER
-    cXml += '				</comprador> ' + _ENTER
-    cXml += '			</cabecalho> ' + _ENTER
-    cXml += '			<detalhes> ' + _ENTER
-    cXml += '				<item>1</item> ' + _ENTER
-    cXml += '				<produto>"UNIF129"</produto> ' + _ENTER
-    cXml += '				<descricao>"ESPARADRAPO 10CMX4,5M REF.198973 CREMER"</descricao> ' + _ENTER
-    cXml += '				<prodfor>"MHMG053"</prodfor> ' + _ENTER
-    cXml += '				<unimed>"UN"</unimed> ' + _ENTER
-    cXml += '				<quantidade>10</quantidade> ' + _ENTER
-    cXml += '				<necessidade>20160629</necessidade> ' + _ENTER
-    cXml += '				<obs>"Observacao"</obs> ' + _ENTER
-    cXml += '			</detalhes> ' + _ENTER
-    cXml += '			<retorno> ' + _ENTER
-    cXml += '				<ocorrencia></ocorrencia> ' + _ENTER
-    cXml += '				<observacao></observacao> ' + _ENTER
-    cXml += '			</retorno> ' + _ENTER
-    cXml += '		</solicitacao> ' + _ENTER
-//    cXml += '	</ser:enviaSolicitacao> ' + _ENTER
-//    cXml += '</soapenv:Body> ' + _ENTER
-//    cXml += '</soapenv:Envelope> ' + _ENTER
+	//| SendMail()
 
-
-
-    Return(cXml)
+Return()
