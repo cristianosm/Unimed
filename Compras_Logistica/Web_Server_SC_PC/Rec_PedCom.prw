@@ -32,6 +32,9 @@ User Function Rec_PedCom(Pedido,lMsErroAuto)
 Static Function PrepVareAmb()
 *******************************************************************************
 
+
+	DbSelectArea("SA2");DbSetOrder(3)
+
 	_SetOwnerPrvt( 'cFornece'		, "AS0052" 				)//Codigo Unimed Centtral [AS0052][01] |
 	_SetOwnerPrvt( 'cLoja'			, "01" 					)//Loja Unimed Centtral [AS0052][01] |
 	_SetOwnerPrvt( 'cFilHom'		, "13" 					)//Filial Homologada a Receber Enviar Solicitacao e Receber Pedidos Sys-ON
@@ -63,13 +66,21 @@ Static Function Valida(Pedido,lMsErroAuto)
 
 	// Valida se existe Cadastro de Comprador Syson
 
-	// Valida se é o Fornecedor Unimed Central
+	// Valida se o Fornecedor Existe no cadastro da Unimed-VS
 	cAuxCnpj := StrZero(Pedido:Cabecalho:Fornecedor,14)
-	cCodFor  := Posicione("SA2",3,xFilial("SA2")+cAuxCnpj,"A2_COD")
-	If (cCodFor != cFornece )
-		cRetorno := "Fornecedor não é Unimed Central. CNPJ: 01.634.601/0001-19"
+	If !(SA2->(DbSeek(xFilial("SA2")+cAuxCnpj,.F.)))
+		cRetorno := "Fornecedor não localizado no Cadastro de Fornecedores. CNPJ:"+Transform(SA2->A2_CGC,"@R 99.999.999/9999-99")+""
 		Return(.F.)
-	EndIf
+	Else
+		cFornece := SA2->A2_COD
+		cLoja	 := SA2->A2_LOJA
+	EndIF
+
+	// Valida se Fornecedor esta bloqueado e Retornou apenas uma loja
+	If SA2->A2_MSBLQL == "1" //Bloqueado
+		cRetorno := "Este Fornecedor esta com o Cadastro Bloqueado. CNPJ:"+Transform(SA2->A2_CGC,"@R 99.999.999/9999-99")+""
+		Return(.F.)
+	EndIF
 
 
 	// Validar Unidade Solicitante
