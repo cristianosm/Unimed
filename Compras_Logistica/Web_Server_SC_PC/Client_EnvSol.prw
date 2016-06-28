@@ -31,27 +31,28 @@ User function Client_EnvSol()
 	Private cNumSol	:= SC1->C1_NUM
 	Private nRecSC1	:= 0 			// Salva o Recno do Item 0001
 	Private cForeLj	:= "AS005201" 	// Unimed Central loja 01
-	
+	Private cFilHom	:= "13"			// Filial Homologada a Receber Enviar Solicitacao e Receber Pedidos Sys-ON
+
 	Private oProcess 	:= Nil
 	Private lEnd 		:= Nil
-	
+
 	oProcess := MsNewProcess():New( {|lEnd| Transmissao()(@oProcess, @lEnd)} , "Transmitindo Solicitacao..."+cNumSol, "", .T. )
 	oProcess:Activate()
-	
+
 Return()
 *******************************************************************************
-Static function Transmissao()//| Funcao Principal 
+Static function Transmissao()//| Funcao Principal
 *******************************************************************************
 
 	Local oWsEnvSol := WSVSService():New()	//| Objeto Estrutura WsService. Baseado em Layout v1.2
 	Local cRetOcor	:= SIMR					//| Ocorrencia de Retorno
 	Local cRetObs	:= ""					//| Observacao de Retorno
 	Local aAreaSC1	:= GetArea()
-	
+
 	oProcess:SetRegua1(5)
 	oProcess:SetRegua2(0)
-	
-	//| Obtem Dados do Cliente  
+
+	//| Obtem Dados do Cliente
 	oProcess:IncRegua1("Validando Solicitacao...")
 	If ValidaEnvio(@cRetOcor,@cRetObs) //| Pre-Validacoes para Envio |
 
@@ -90,15 +91,21 @@ Static Function ValidaEnvio(cRetOcor,cRetObs) //| Pre-Validacoes para Envio |
 	EndIf
 	nRecSC1 := Recno()
 
+	If SC1->C1_FILIAL $ cFilHom //| Codigo das Filiais Homologadas...|
+		cRetOcor := "N" ;eVal(bVNIEnter)
+		cRetObs := "Esta Filial nao esta Homologada a enviar Solicitacoes ao Sys-On..."
+		Return(.F.)
+	EndIf
+
 	If SC1->C1_INTWSO <> "S"
 		cRetOcor := "N" ;eVal(bVNIEnter)
-		cRetObs := "Esta Solicitacao nao se trata de uma Solicitacao que pode ser transmitid ao Sys-On.. O->Outros ..."
+		cRetObs := "Esta Solicitacao nao pode ser transmitid ao Sys-On.. O->Outros ..."
 		Return(.F.)
 	EndIf
 
 	If SC1->C1_APROV <> "L"
 		cRetOcor := "N" ;eVal(bVNIEnter)
-		cRetObs += "Esta Solicitacao nao esta Aprovada, por favor faca a Liberacao antes de Transmitir..."
+		cRetObs += "Esta Solicitacao nao esta Aprovada, por favor faca a Aprovacao antes..."
 	EndIF
 
 	If SC1->C1_TX == 'TR'
