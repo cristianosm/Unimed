@@ -60,7 +60,7 @@ Static Function Valida(Pedido,lMsErroAuto)
 *******************************************************************************
 
 	If !lRpcSet
-		cRetorno := "Não Foi Possivel inicializar o ambinete (RpcSetEnv) com a Filial: "+cFilAnt
+		cRetorno := "Nao Foi Possivel inicializar o ambinete (RpcSetEnv) com a Filial: "+cFilAnt
 		Return(.F.)
 	Endif
 
@@ -69,7 +69,7 @@ Static Function Valida(Pedido,lMsErroAuto)
 	// Valida se o Fornecedor Existe no cadastro da Unimed-VS
 	cAuxCnpj := StrZero(Pedido:Cabecalho:Fornecedor,14)
 	If !(SA2->(DbSeek(xFilial("SA2")+cAuxCnpj,.F.)))
-		cRetorno := "Fornecedor não localizado no Cadastro de Fornecedores. CNPJ:"+Transform(SA2->A2_CGC,"@R 99.999.999/9999-99")+""
+		cRetorno := "Fornecedor Nao localizado no Cadastro de Fornecedores. CNPJ:"+Transform(SA2->A2_CGC,"@R 99.999.999/9999-99")+""
 		Return(.F.)
 	Else
 		cFornece := SA2->A2_COD
@@ -94,7 +94,7 @@ Static Function Valida(Pedido,lMsErroAuto)
 
 	// Validar Cadastro de Prod x For
 
-	// Validar se Solicitacao é Sys-On
+	// Validar se Solicitacao ï¿½ Sys-On
 
 	// Validar se Solicitacao esta Liberada
 
@@ -146,13 +146,12 @@ Static Function MDet(adet)
 					{"C7_PRECO"  	,SToV(oItem:PrcUnit	 )		,nil},;
 					{"C7_TOTAL"  	,SToV(oItem:Total	 )		,nil},;
 					{"C7_DATPRF"	,StoD(oItem:DataEntr)		,nil},;
-					{"C7_OBS"    	,oItem:Obs					,nil},;
+					{"C7_OBS"    	,oItem:Obs					,nil},; // ESTOU RECEBENDO DO SYSON| pegar da Solicitacao
 					{"C7_NUMSC"   	,StrZero(oItem:NumSC,6)		,nil},;
 					{"C7_ITEMSC"  	,StrZero(oItem:ItemSC,4)	,nil},;
 					{"C7_QTDSOL"  	,SToV(oItem:Quantidade)		,nil},;
 					{"C7_CC"    	,"11813"					,nil},; // pegar da Solicitacao
 					{"C7_LOCAL"  	,"02"						,nil},; // pegar da Solicitacao
-					{"C7_OBS"  		,"Observacao"				,nil},; // pegar da Solicitacao
 					{"C7_JUST"  	,"Justificativa"			,nil}}) // pegar da Solicitacao
 
 	Next nPC
@@ -175,7 +174,7 @@ Static Function ExecAuto(aCab, adet ,lMsErroAuto)
 
 	Else
 		lMsErroAuto := .T.
-		cRetorno := "Não Foi Possivel Montar o Cabecalho e/ou Itens do Pedido.. MSExecAuto ! "
+		cRetorno := "Nao Foi Possivel Montar o Cabecalho e/ou Itens do Pedido.. MSExecAuto ! "
 	EndIF
 
 Return()
