@@ -7,9 +7,14 @@
 #Define PEDCOMPRA	1
 #Define INCLUI		3
 #Define DOISES		"  "
+
+#Define _CNPJ		18 // Posicao a do CNPJ no retorno da funcao FWArrFilAtu
+
+#Define _ENTER		CHR(13)+CHR(10)
+
 *******************************************************************************
 User Function Rec_PedCom(Pedido,lMsErroAuto)
-*******************************************************************************
+	*******************************************************************************
 
 	PrepVareAmb()
 
@@ -27,12 +32,12 @@ User Function Rec_PedCom(Pedido,lMsErroAuto)
 
 	SC7->(ConfirmSX8())
 
-	Return(cRetorno)
-*******************************************************************************
+	Return(Substr(cRetorno,1,177))// Ajusta o Limite do Retorno
+	*******************************************************************************
 Static Function PrepVareAmb()
-*******************************************************************************
+	*******************************************************************************
 
-
+	DbSelectArea("SC1");DbSetOrder(1)
 	DbSelectArea("SA2");DbSetOrder(3)
 
 	_SetOwnerPrvt( 'cFornece'		, "AS0052" 				)//Codigo Unimed Centtral [AS0052][01] |
@@ -54,10 +59,12 @@ Static Function PrepVareAmb()
 
 	cNumSc7 := GetSX8Num("SC7","C7_NUM") //"A12875"
 
-Return()
-*******************************************************************************
+	Return()
+	*******************************************************************************
 Static Function Valida(Pedido,lMsErroAuto)
-*******************************************************************************
+	*******************************************************************************
+	Local aAreAux := Nil
+	Local lRet	  := .T.
 
 	If !lRpcSet
 		cRetorno := "Nao Foi Possivel inicializar o ambinete (RpcSetEnv) com a Filial: "+cFilAnt
@@ -65,6 +72,14 @@ Static Function Valida(Pedido,lMsErroAuto)
 	Endif
 
 	// Valida se existe Cadastro de Comprador Syson
+	aAreAux := SY1->(GetArea())
+	DbSelectArea("SY1");DbSetOrder(1)
+	If !(DbSeek(xFilial("SY1")+"000",.F. ))
+		cRetorno := "Não Localizado o Cadastro do Comprador SysOn. Código '000' Tabela SY1"
+		RestArea(aAreAux)
+		Return(.F.)
+	EndIf
+	RestArea(aAreAux)
 
 	// Valida se o Fornecedor Existe no cadastro da Unimed-VS
 	cAuxCnpj := StrZero(Pedido:Cabecalho:Fornecedor,14)
@@ -72,18 +87,34 @@ Static Function Valida(Pedido,lMsErroAuto)
 		cRetorno := "Fornecedor Nao localizado no Cadastro de Fornecedores. CNPJ:"+Transform(SA2->A2_CGC,"@R 99.999.999/9999-99")+""
 		Return(.F.)
 	Else
+
+		// Valida se Fornecedor Retornou apenas uma loja apartir do CNJ.
+		nF := 0
+		While cAuxCnpj == SA2->A2_CGC .And. !Eof() // Valida se Fornecedor Retornou apenas uma loja
+			nF += 1 ; SA2->( DbSkip() )
+		EndDo
+		If nF > 1
+			cRetorno := "Fornecedor Possui mais de um Cadastro com o mesmo CNPJ:"+Transform(SA2->A2_CGC,"@R 99.999.999/9999-99")+". Deve ser Corrigido."
+			Return(.F.)
+		EndIf
+
 		cFornece := SA2->A2_COD
 		cLoja	 := SA2->A2_LOJA
+
 	EndIF
 
-	// Valida se Fornecedor esta bloqueado e Retornou apenas uma loja
+	// Valida se Fornecedor esta bloqueado
 	If SA2->A2_MSBLQL == "1" //Bloqueado
 		cRetorno := "Este Fornecedor esta com o Cadastro Bloqueado. CNPJ:"+Transform(SA2->A2_CGC,"@R 99.999.999/9999-99")+""
 		Return(.F.)
 	EndIF
 
-
 	// Validar Unidade Solicitante
+	aDadosFil := FWArrFilAtu("01",cFilHom)
+	If aDadosFil[_CNPJ] <>  StrZero(Pedido:Cabecalho:UnidadeSol,14)
+		cRetorno := "O Solicitante do Pedido não esta Homologado a Receber Pedidos Sys-On. CNPJ:"+Transform( StrZero(Pedido:Cabecalho:UnidadeSol,14),"@R 99.999.999/9999-99")+""
+		Return(.F.)
+	EndIF
 
 	// Validar condicao de Pagto
 	cCondPag := Alltrim( GetCond( Pedido:Cabecalho:CondPag ) )
@@ -93,14 +124,64 @@ Static Function Valida(Pedido,lMsErroAuto)
 	EndIf
 
 	// Validar Cadastro de Prod x For
+	For nPC := 1 to len(Pedido:Detalhes)
+		cProd := RetProd(Pedido:Detalhes[nPC]:ProdFor)
+		If Empty(cProd)
+			cRetorno += "O Item " + cValToChar(Pedido:Detalhes[nPC]:Item) + " Produto: "+Alltrim(Pedido:Detalhes[nPC]:ProdFor)+" nao possui cadastro de Produto x Fornecedor ("+cForeLj+")"
+			lRet := .F.
+		Else
+			Pedido:Detalhes[nPC]:Produto := cProd
+		EndIf
+	Next
+	If !lRet
+		Return(.F.)
+	Else
 
-	// Validar se Solicitacao ï¿½ Sys-On
+		// Valida se Quantidade disponivel na Solicitacao Atende o Item do Pedido e se é o mesmo Produto da Solicitacao
+		For nPC := 1 to len(Pedido:Detalhes)
 
-	// Validar se Solicitacao esta Liberada
+			cNSol := StrZero(Pedido:Detalhes[nPC]:NumSC,6)
+			cNIte := StrZero(Pedido:Detalhes[nPC]:ItemSC,4)
+			nQtd  := SToV(Pedido:Detalhes[nPC]:Quantidade)
+			If SldDispSC(cNSol,cNIte,nQtd) < 0
+				cRetorno += "A Solicitacao " + cNSol + " Item "+cNIte+" não possui saldo para atender o " + Alltrim(Pedido:Detalhes[nPC]:obs)+" . "
+				lRet := .F.
+			ElseIf Alltrim(Pedido:Detalhes[nPC]:Produto) <> Alltrim(SC1->C1_PRODUTO)
+				cRetorno += "O Produto "+Alltrim(Pedido:Detalhes[nPC]:Produto)+" no pedido nao correponde ao Solicitado "+Alltrim(SC1->C1_PRODUTO)+". " + Alltrim(Pedido:Detalhes[nPC]:obs) + " . "
+				lRet := .F.
+			EndIf
 
-	// Validar Saldo em Solicitacao
+		Next
+		If !lRet
+			Return(.F.)
+		Else
 
-Return(.T.)
+			//| Valida se a Solicitacao eh Sys-ON, Esta Libera e ja Foi Transmitida. Deve Estar POSICIONADO no SC1
+			For nPC := 1 to len(Pedido:Detalhes)
+
+				If SC1->C1_INTWSO <> "S"  // Sys-On
+					cRetorno += "A Solicitacao " + cNSol + " nao e uma Solicitacao Sys-On...  "
+					lRet := .F.
+					Exit
+				ElseIf SC1->C1_APROV <> "L" // Aprovada
+					cRetorno += "A Solicitacao " + cNSol + " nao esta APROVADA... "
+					lRet := .F.
+					Exit
+				ElseIf SC1->C1_TX <> "TR" // Ja Transmitida
+					cRetorno += "A Solicitacao " + cNSol + " nao foi Transmitida ao Sys-on... "
+					lRet := .F.
+					Exit
+				EndIf
+
+			Next
+
+			If !lRet
+				Return(.F.)
+			EndIf
+		EndIf
+	EndIf
+
+	Return(lRet)
 *******************************************************************************
 Static Function Estrutura(Cab,adet)
 *******************************************************************************
@@ -109,10 +190,10 @@ Static Function Estrutura(Cab,adet)
 
 	MDet(@adet)
 
-Return()
-*******************************************************************************
+	Return()
+	*******************************************************************************
 Static Function MaCab(Cab)
-*******************************************************************************
+	*******************************************************************************
 
 	aAdd(aCab, {'C7_NUM'	, cNumSc7 							, Nil})	//--Numero do Pedido
 	aAdd(aCab, {'C7_EMISSAO', StoD(Pedido:Cabecalho:Emissao)	, Nil})	//--Data de Emissao
@@ -130,36 +211,36 @@ Static Function MaCab(Cab)
 		aAdd(aCab, {'C7_SEGURO'	, SToV(Pedido:Cabecalho:Frete:Seguro )	, Nil})	//--Vlr.Seguro
 	EndIf
 
-Return()
-*******************************************************************************
+	Return()
+	*******************************************************************************
 Static Function MDet(adet)
-*******************************************************************************
+	*******************************************************************************
 
 	For nPC := 1 to len(Pedido:Detalhes)
 
 		oItem := Pedido:Detalhes[nPC]
 
 		aadd(aDet,{	{"C7_ITEM"   	,StrZero(oItem:Item,4)		,nil},;
-					{"C7_PRODUTO"	,RetProd(oItem:ProdFor)		,nil},;
-					{"C7_CLVL"		,"0900001"					,nil},; // pegar da Solicitacao
-					{"C7_QUANT"  	,SToV(oItem:Quantidade)		,nil},;
-					{"C7_PRECO"  	,SToV(oItem:PrcUnit	 )		,nil},;
-					{"C7_TOTAL"  	,SToV(oItem:Total	 )		,nil},;
-					{"C7_DATPRF"	,StoD(oItem:DataEntr)		,nil},;
-					{"C7_OBS"    	,oItem:Obs					,nil},; // ESTOU RECEBENDO DO SYSON| pegar da Solicitacao
-					{"C7_NUMSC"   	,StrZero(oItem:NumSC,6)		,nil},;
-					{"C7_ITEMSC"  	,StrZero(oItem:ItemSC,4)	,nil},;
-					{"C7_QTDSOL"  	,SToV(oItem:Quantidade)		,nil},;
-					{"C7_CC"    	,"11813"					,nil},; // pegar da Solicitacao
-					{"C7_LOCAL"  	,"02"						,nil},; // pegar da Solicitacao
-					{"C7_JUST"  	,"Justificativa"			,nil}}) // pegar da Solicitacao
+		{"C7_PRODUTO"	,RetProd(oItem:ProdFor)		,nil},;
+		{"C7_CLVL"		,"0900001"					,nil},; // pegar da Solicitacao
+		{"C7_QUANT"  	,SToV(oItem:Quantidade)		,nil},;
+		{"C7_PRECO"  	,SToV(oItem:PrcUnit	 )		,nil},;
+		{"C7_TOTAL"  	,SToV(oItem:Total	 )		,nil},;
+		{"C7_DATPRF"	,StoD(oItem:DataEntr)		,nil},;
+		{"C7_OBS"    	,oItem:Obs					,nil},; // ESTOU RECEBENDO DO SYSON| pegar da Solicitacao
+		{"C7_NUMSC"   	,StrZero(oItem:NumSC,6)		,nil},;
+		{"C7_ITEMSC"  	,StrZero(oItem:ItemSC,4)	,nil},;
+		{"C7_QTDSOL"  	,SToV(oItem:Quantidade)		,nil},;
+		{"C7_CC"    	,"11813"					,nil},; // pegar da Solicitacao
+		{"C7_LOCAL"  	,"02"						,nil},; // pegar da Solicitacao
+		{"C7_JUST"  	,"Justificativa"			,nil}}) // pegar da Solicitacao
 
 	Next nPC
 
-Return()
-*******************************************************************************
+	Return()
+	*******************************************************************************
 Static Function ExecAuto(aCab, adet ,lMsErroAuto)
-*******************************************************************************
+	*******************************************************************************
 
 	If Len( aCab ) > 0 .And. Len( aDet ) > 0
 
@@ -177,10 +258,10 @@ Static Function ExecAuto(aCab, adet ,lMsErroAuto)
 		cRetorno := "Nao Foi Possivel Montar o Cabecalho e/ou Itens do Pedido.. MSExecAuto ! "
 	EndIF
 
-Return()
-*******************************************************************************
+	Return()
+	*******************************************************************************
 Static Function AjusRet()
-*******************************************************************************
+	*******************************************************************************
 
 	Local cTxtLog := NomeAutoLog()
 	Local cTxtAux := ""
@@ -191,7 +272,7 @@ Static Function AjusRet()
 
 		conout(cTxtAux)
 
-		cTxtAux     := StrTran(cTxtAux,ENTER," ")
+		cTxtAux     := StrTran(cTxtAux,_ENTER," ")
 
 		// Remove os espacos em Branco desnecessarios
 		While AT(DOISES, cTxtAux ) > 0
@@ -201,29 +282,28 @@ Static Function AjusRet()
 		cTxtAux 	:= "MSExecAuto: MATA120: " + Substr(cTxtAux,1,150) + "..."
 	EndIf
 
-Return(cTxtAux)
-*******************************************************************************
+	Return(cTxtAux)
+	*******************************************************************************
 Static Function SToV(cString)//| Converte String para Number
-*******************************************************************************
-Local nVal := 0
+	*******************************************************************************
+	Local nVal := 0
 
-nVal := Val(StrTran(cString,",","."	))
+	nVal := Val(StrTran(cString,",","."	))
 
-Return(nVal)
-*******************************************************************************
+	Return(nVal)
+	*******************************************************************************
 Static Function RetProd(CProdFor)//| Retorno de Ocorrencia do Recebimento do Pedido
-*******************************************************************************
+	*******************************************************************************
 	Local cProduto
 
 	cProduto := Alltrim( Posicione("SA5",14,xFilial("SA5")+"AS005201"+CProdFor,"A5_PRODUTO"))
 
-Return(cProduto)
-*******************************************************************************
+	Return(cProduto)
+	*******************************************************************************
 Static Function GetCond(cCond)//| Retorno de Ocorrencia do Recebimento do Pedido
-*******************************************************************************
+	*******************************************************************************
 
-Local cSql := "select e4_Codigo from se4010 where e4_cond = '"+Alltrim(cCond)+"' and e4_tipo = '1' and Substr(e4_Codigo,1,1) = '6' and Rownum = 1 and d_e_l_e_t_ = ' '"
-
+	Local cSql := "select e4_Codigo from se4010 where e4_cond = '"+Alltrim(cCond)+"' and e4_tipo = '1' and Substr(e4_Codigo,1,1) = '6' and Rownum = 1 and d_e_l_e_t_ = ' '"
 
 	If( Select("TACP") <> 0 )
 		DbSelectArea("TACP");DbCloseArea()
@@ -235,4 +315,15 @@ Local cSql := "select e4_Codigo from se4010 where e4_cond = '"+Alltrim(cCond)+"'
 
 	DbSelectArea("TACP");DbCloseArea()
 
-Return(cCond)
+	Return(cCond)
+	*******************************************************************************
+Static Function SldDispSC(cSol, cItem, nQuant)
+	*******************************************************************************
+	Local nSaldo := -1
+
+	DbSelectArea("SC1")
+	If DbSeek(xFilial("SC1")+cSol+cItem,.F.)
+		nSaldo := SC1->C1_QUANT - SC1->C1_QUJE - nQuant
+	EndIf
+
+Return(nSaldo)

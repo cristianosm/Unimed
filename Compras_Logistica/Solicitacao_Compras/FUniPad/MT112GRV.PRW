@@ -18,28 +18,30 @@
 ±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
 ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß
 */
+// Descontinuado
 
+/*
 User Function MT110GRV()
 Local ExpN1    := Paramixb[1]
-Local ExpL1    := .T.   
+Local ExpL1    := .T.
 
 If !INCLUI .and. !ALTERA
 	If Z51->(MsSeek(SC1->(C1_FILIAL + C1_NUM)))
 		While !Z51->(Eof()) .and. SC1->(C1_FILIAL + C1_NUM) == Z51->(Z51_FILIAL + Z51_NUMSC)
 			Z51->(RecLock("Z51",.F.))
 			Z51->(DbDelete())
-			Z51->(Msunlock())		    
+			Z51->(Msunlock())
 			Z51->(DbSkip(1))
 		EndDo
-	EndIf	
+	EndIf
 	If Z50->(MsSeek(SC1->(C1_FILIAL + C1_NUM)))
 		While !Z50->(Eof()) .and. SC1->(C1_FILIAL + C1_NUM) == Z50->(Z50_FILIAL + Z50_NUMSC)
 			Z50->(RecLock("Z50",.F.))
 			Z50->(DbDelete())
-			Z50->(Msunlock())		    
+			Z50->(Msunlock())
 			Z50->(DbSkip(1))
 		EndDo
-	EndIf			
+	EndIf
 Else
 	If SC1->(!Eof())
 	    RecLock("SC1",.F.)
@@ -48,4 +50,4 @@ Else
 	EndIf
 EndIf
 
-Return ExpL1
+Return ExpL1*/

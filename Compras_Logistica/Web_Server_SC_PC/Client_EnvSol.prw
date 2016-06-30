@@ -36,8 +36,13 @@ User function Client_EnvSol()
 	Private oProcess 	:= Nil
 	Private lEnd 		:= Nil
 
-	oProcess := MsNewProcess():New( {|lEnd| Transmissao()(@oProcess, @lEnd)} , "Transmitindo Solicitacao..."+cNumSol, "", .T. )
-	oProcess:Activate()
+
+	If Iw_MsgBox("Confirma a Transmissao da Solicitacao: "+cNumSol,"Confirmacao...","YESNO")
+
+		oProcess := MsNewProcess():New( {|lEnd| Transmissao()(@oProcess, @lEnd)} , "Transmitindo Solicitacao..."+cNumSol, "", .T. )
+		oProcess:Activate()
+
+	EndIf
 
 Return()
 *******************************************************************************
@@ -82,7 +87,7 @@ Static Function ValidaEnvio(cRetOcor,cRetObs) //| Pre-Validacoes para Envio |
 //| Solicitacao so pode ser enviada apos estar Aprovada no Protheus.
 //| Durante a confeccao da Solicitacao de Compras, verificar se existe o relacionamento Produto X Fornecedor com a UNIMED CENTRAL
 	Local bVNIEnter := {|| cRetObs += If(Empty(cRetObs),"",_ENTER) }
-
+	Local lVal	:= .T.
 	DbSelectArea("SC1");DbSetOrder(1)
 
 	// Posiciona se Necessario
@@ -91,26 +96,28 @@ Static Function ValidaEnvio(cRetOcor,cRetObs) //| Pre-Validacoes para Envio |
 	EndIf
 	nRecSC1 := Recno()
 
-	If SC1->C1_FILIAL $ cFilHom //| Codigo das Filiais Homologadas...|
+	If !(SC1->C1_FILIAL $ cFilHom ) //| Codigo das Filiais Homologadas...|
 		cRetOcor := "N" ;eVal(bVNIEnter)
-		cRetObs := "Esta Filial nao esta Homologada a enviar Solicitacoes ao Sys-On..."
-		Return(.F.)
+		cRetObs += "Esta Filial nao esta Homologada a enviar Solicitacoes ao Sys-On..." + _ENTER
+		lVal	:= .F.
 	EndIf
 
 	If SC1->C1_INTWSO <> "S"
 		cRetOcor := "N" ;eVal(bVNIEnter)
-		cRetObs := "Esta Solicitacao nao pode ser transmitid ao Sys-On.. O->Outros ..."
-		Return(.F.)
+		cRetObs += "Esta Solicitacao nao pode ser transmitida ao Sys-On.. Tipo Icorreto: O->Outros ..." + _ENTER
+		lVal	:= .F.
 	EndIf
 
 	If SC1->C1_APROV <> "L"
 		cRetOcor := "N" ;eVal(bVNIEnter)
-		cRetObs += "Esta Solicitacao nao esta Aprovada, por favor faca a Aprovacao antes..."
+		cRetObs += "Esta Solicitacao nao esta Aprovada, Deve estar Aprovada para ser Transmitida ..." + _ENTER
+		lVal	:= .F.
 	EndIF
 
 	If SC1->C1_TX == 'TR'
 		cRetOcor := "N" ;eVal(bVNIEnter)
-		cRetObs += "Esta Solicitacao ja foi Transmitida ao Sys-On..."
+		cRetObs += "Esta Solicitacao ja foi Transmitida ao Sys-On..." + _ENTER
+		lVal	:= .F.
 	Else
 
 		// Valida Prod x Fornecedor
@@ -118,7 +125,8 @@ Static Function ValidaEnvio(cRetOcor,cRetObs) //| Pre-Validacoes para Envio |
 
 			If Empty(Alltrim(Posicione("SA5",1,xFilial("SA5")+cForeLj+SC1->C1_PRODUTO,"A5_CODPRF")))
 				cRetOcor := "N" ;eVal(bVNIEnter)
-				cRetObs += "O Item " + SC1->C1_ITEM + " Produto: "+SC1->C1_PRODUTO+" Nao possui cadastro de Produto x Fornecedor ("+cForeLj+")"
+				cRetObs += "O Item " + Alltrim(SC1->C1_ITEM) + " Produto: "+Alltrim(SC1->C1_PRODUTO)+" nao possui cadastro de Produto x Fornecedor ("+cForeLj+")" + _ENTER
+				lVal := .F.
 			EndIf
 
 			DbSelectArea("SC1");DbSkip()
@@ -133,7 +141,7 @@ Static Function ValidaEnvio(cRetOcor,cRetObs) //| Pre-Validacoes para Envio |
 		Return(.F.)
 	EndIF
 
-Return(.T.)
+Return(lVal)
 *******************************************************************************
 Static Function MSolicitacao(oWsEnvSol)//| Monta a Solicitacao no Envelope WS
 *******************************************************************************
@@ -241,9 +249,12 @@ Return()
 Static Function  ShowErr(cRetObs)// Solicitacao nao Recebida....
 *******************************************************************************
 
-	Local cTexto := "Solcitacao: " + cNumSol + " nao recebida no Sys-On... " + _ENTER + _ENTER + "Motivo: " + cRetObs
+	Local cTexto := "SOLICITACAO " + cNumSol + " NAO TRANSMITIDA !!! " + _ENTER + _ENTER + "MOTIVOS(S): " + _ENTER + _ENTER + cRetObs
 
-	Define FONT oFont NAME "Tahoma" Size 8,15
+	Define FONT oFont NAME "Tahoma" Size 6,14
+
+	oFont := TFont():New('Tahoma',,16,.F.)
+
 	Define MsDialog oDlgMemo Title "Solicitacao nao Transmitida !!! " From 3,0 to 340,550 Pixel
 
 	@ 5,5 Get oMemo  Var cTexto MEMO Size 265,145 Of oDlgMemo Pixel
@@ -263,7 +274,32 @@ Static Function  ShowOk(cRetObs)// Solicitacao nao Recebida....
 
 	Iw_MsgBox(cTexto,"Transmissao","INFO")
 
+	MarkScSend() // Marca a Silicitacao como enviada.
 
 	//| SendMail()
 
 Return()
+*******************************************************************************
+Static Function MarkScSend() // Marca a Silicitacao como Transmitida.
+*******************************************************************************
+
+	DbSelectArea("SC1");DbGoto(nRecSC1)
+	While !Eof() .And. cNumSol == SC1->C1_NUM
+
+		RecLock("SC1", .F.)
+
+		SC1->C1_INTWSO 	:= 'S'
+		SC1->C1_TX 		:= 'TR'
+		SC1->C1_QUJE 	:= 0
+
+		MsUnlock()
+
+		DbSelectArea("SC1")
+		DbSkip()
+
+		EndDo
+
+
+Return()
+
+

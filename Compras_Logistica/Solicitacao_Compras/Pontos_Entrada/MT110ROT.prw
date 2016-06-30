@@ -38,7 +38,7 @@ User function MT110ROT()
  //    5 - Remove o registro corrente do Banco de Dados
  //    6 - Altera determinados campos sem incluir novos Regs
 
- AAdd( aRotina, { "Transmição Sys-On", 'U_Client_EnvSol()', 0, 4 } )
+ AAdd( aRotina, { "Transmitir ao Sys-On", 'U_Client_EnvSol()', 0, 4 } )
 
 Return aRotina
 

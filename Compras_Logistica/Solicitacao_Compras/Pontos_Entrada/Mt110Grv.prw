@@ -28,6 +28,9 @@ lExp1 :=  PARAMIXB[1]
 //| Salva o Conteudo da Variavel cIntWSo Que existe no Cab. da Sol de Compras na Tebla SC1
 SvCpoISo()
 
+//| Customizacao que já existia no Fonte da Unimed MT112GRV. Deve ser Substituido por este.
+CustomUni()
+
 Return()
 *******************************************************************************
 Static Function SvCpoISo()//| Salva o Conteudo da Variavel cIntWSo Que existe no Cab. da Sol de Compras na Tebla SC1
@@ -40,8 +43,35 @@ If cIntWSo == "S" .And. SC1->C1_TX == "  " //| Solicitação Sys-On
 EndIf
 MsUnlock()
 
+Return()
 
+*******************************************************************************
+Static Function CustomUni()//| Customizacao que já existia no Fonte da Unimed MT112GRV. Deve ser Substituido por este.
+*******************************************************************************
 
-
+If !INCLUI .and. !ALTERA
+	If Z51->(MsSeek(SC1->(C1_FILIAL + C1_NUM)))
+		While !Z51->(Eof()) .and. SC1->(C1_FILIAL + C1_NUM) == Z51->(Z51_FILIAL + Z51_NUMSC)
+			Z51->(RecLock("Z51",.F.))
+			Z51->(DbDelete())
+			Z51->(Msunlock())
+			Z51->(DbSkip(1))
+		EndDo
+	EndIf
+	If Z50->(MsSeek(SC1->(C1_FILIAL + C1_NUM)))
+		While !Z50->(Eof()) .and. SC1->(C1_FILIAL + C1_NUM) == Z50->(Z50_FILIAL + Z50_NUMSC)
+			Z50->(RecLock("Z50",.F.))
+			Z50->(DbDelete())
+			Z50->(Msunlock())
+			Z50->(DbSkip(1))
+		EndDo
+	EndIf
+Else
+	If SC1->(!Eof())
+	    RecLock("SC1",.F.)
+		C1_APROV := "B"
+		Msunlock()
+	EndIf
+EndIf
 
 Return()
