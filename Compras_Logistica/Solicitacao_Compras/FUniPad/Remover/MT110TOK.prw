@@ -3,30 +3,30 @@
 #INCLUDE 'tbiconn.ch'
 #INCLUDE "Protheus.ch"
 /*
-ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
-ฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑ
-ฑฑษออออออออออัออออออออออหอออออออัออออออออออออออออออออหออออออัออออออออออออออปฑฑ
-ฑฑบPrograma  ณMT110TOK  บAutor  ณMicrosiga           บ Data ณ  08/19/10    บฑฑ
-ฑฑฬออออออออออุออออออออออสอออออออฯออออออออออออออออออออสออออออฯออออออออออออออนฑฑ
-ฑฑบDesc.     ณ LOCALIZAวรO : Function A110TudOk() responsแvel pela valida็ใoฑฑ
-ฑฑบ			 ณ da GetDados da Solicita็ใo de Compras .                      ฑฑ
-ฑฑบ			 ณ EM QUE PONTO : O ponto se encontra no final da fun็ใo e deve ฑฑ
-ฑฑบ			 ณ ser utilizado para valida็๕es especificas do usuario onde    ฑฑ
-ฑฑบ			 ณ serแ controlada pelo retorno do ponto de entrada o qual se   ฑฑ
-ฑฑบ			 ณ for .F. o processo serแ interrompido e se .T. serแ validado. ฑฑ
-ฑฑบ          ณ                                                             บฑฑ
-ฑฑฬออออออออออุอออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออนฑฑ
-ฑฑบUso       ณ AP                                                          บฑฑ
-ฑฑศออออออออออฯอออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออผฑฑ
-ฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑ
-฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿
+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+XXXPrograma  XMT110TOK  XAutor  XMicrosiga           X Data X  08/19/10    XXX
+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+XXXDesc.     X LOCALIZAXXO : Function A110TudOk() responsXvel pela validaXXoXX
+XXX			 X da GetDados da SolicitaXXo de Compras .                      XX
+XXX			 X EM QUE PONTO : O ponto se encontra no final da funXXo e deve XX
+XXX			 X ser utilizado para validaXXes especificas do usuario onde    XX
+XXX			 X serX controlada pelo retorno do ponto de entrada o qual se   XX
+XXX			 X for .F. o processo serX interrompido e se .T. serX validado. XX
+XXX          X                                                             XXX
+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+XXXUso       X AP                                                          XXX
+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 */
 
 User Function MT110TOK()     
 Local nTotSol, nPosCta, cChave
 Local cArea := GetArea()
 Local lResult  	:= .F.
-Local cMsg:= "A rotina nใo poderแ prosseguir. Os Campos a seguir nใo estใo disponํveis para voc๊. Informe-os para Administrador do sistema:" + CHR(13)+CHR(10)
+Local cMsg:= "A rotina nXo poderX prosseguir. Os Campos a seguir nXo estXo disponXveis para vocX. Informe-os para Administrador do sistema:" + CHR(13)+CHR(10)
 Local lReturn := .T.
 
 Private cHtml 	  := ""
@@ -60,11 +60,11 @@ IF 	GDFieldPos("C1_ITEM") == 0 .OR. ;
 	GDFieldPos("C1_QUANT") == 0 .OR. ;
 	GDFieldPos("C1_CC") == 0 
 	
-	cMsg += "campos padr๕es -> C1_ITEM, C1_PRODUTO, C1_UM, C1_QUANT, C1_DESCRI, C1_CC"
+	cMsg += "campos padrXes -> C1_ITEM, C1_PRODUTO, C1_UM, C1_QUANT, C1_DESCRI, C1_CC"
 	lReturn := .F.
 ENDIF
 IF !lReturn
-	IW_MSGBOX(cMsg,"Inconsist๊ncia!","INFO" )
+	IW_MSGBOX(cMsg,"InconsistXncia!","INFO" )
 	Return lReturn
 ENDIF	
 
@@ -112,18 +112,18 @@ Return lReturn
 
 
 /*
-ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
-ฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑ
-ฑฑษออออออออออัออออออออออหอออออออัออออออออออออออออออออหออออออัอออออออออออออปฑฑ
-ฑฑบPrograma  ณMT110TOK  บAutor  ณMicrosiga           บ Data ณ  08/25/10   บฑฑ
-ฑฑฬออออออออออุออออออออออสอออออออฯออออออออออออออออออออสออออออฯอออออออออออออนฑฑ
-ฑฑบDesc.     ณ Gerencia e envia os e-mails                                บฑฑ
-ฑฑบ          ณ                                                            บฑฑ
-ฑฑฬออออออออออุออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออนฑฑ
-ฑฑบUso       ณ AP                                                        บฑฑ
-ฑฑศออออออออออฯออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออผฑฑ
-ฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑ
-฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿
+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+XXXPrograma  XMT110TOK  XAutor  XMicrosiga           X Data X  08/25/10   XXX
+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+XXXDesc.     X Gerencia e envia os e-mails                                XXX
+XXX          X                                                            XXX
+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+XXXUso       X AP                                                        XXX
+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 */
 
 Static Function EnviaMail()
@@ -131,7 +131,7 @@ Local cServer 	:= GetMV("MV_RELSERV" )
 Local cAccount 	:= Alltrim(GETMV("MV_RELACNT"))
 Local cPassword := Alltrim(GETMV("MV_RELPSW"))
 Local lAuth 	:= Getmv("MV_RELAUTH")
-Local cAssunto 	:= "Solicita็ใo Compra " + "-  Data de Gera็ใo : " + DTOC(date())
+Local cAssunto 	:= "SolicitaXXo Compra " + "-  Data de GeraXXo : " + DTOC(date())
 Local cEmailTo 	:= Getmv("UN_EMASC")
 Local cEmailBcc	:= " "
 Local lResult  	:= .F.
@@ -150,7 +150,7 @@ If !lResult .And. lAuth
 	FOR Z :=1 TO 5
 		sleep(1000)
 		If !lResult
-			Conout("SC -  Tentando Autentica็ใo " + Transform(Z,'@E 99') + " de 5" )
+			Conout("SC -  Tentando AutenticaXXo " + Transform(Z,'@E 99') + " de 5" )
 			lResult := MailAuth(cAccount,cPassword) .or. QADGetMail() // Funcao que abre uma janela perguntando o usuario e senha para fazer autenticacao
 		ELSE
 			exit
@@ -192,24 +192,24 @@ If lResult
 	EndIf
 	//		DISCONNECT SMTP SERVER
 Endif
-Conout("SC - Email enviado para " + cEmailTo + " e c๓pia para " + cEmailBcc )
+Conout("SC - Email enviado para " + cEmailTo + " e cXpia para " + cEmailBcc )
 DISCONNECT SMTP SERVER
 Return
 
 
 /*
-ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
-ฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑ
-ฑฑษออออออออออัออออออออออหอออออออัออออออออออออออออออออหออออออัอออออออออออออปฑฑ
-ฑฑบPrograma  ณMT110TOK  บAutor  ณMicrosiga           บ Data ณ  08/25/10   บฑฑ
-ฑฑฬออออออออออุออออออออออสอออออออฯออออออออออออออออออออสออออออฯอออออออออออออนฑฑ
-ฑฑบDesc.     ณ Monta o HTML que irแ ser enviado no corpo do e-mail        บฑฑ
-ฑฑบ          ณ                                                            บฑฑ
-ฑฑฬออออออออออุออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออนฑฑ
-ฑฑบUso       ณ AP                                                         บฑฑ
-ฑฑศออออออออออฯออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออผฑฑ
-ฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑ
-฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿
+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+XXXPrograma  XMT110TOK  XAutor  XMicrosiga           X Data X  08/25/10   XXX
+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+XXXDesc.     X Monta o HTML que irX ser enviado no corpo do e-mail        XXX
+XXX          X                                                            XXX
+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+XXXUso       X AP                                                         XXX
+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 */
 
 Static Function MontaHtml(NumSC, CodSol, Solici)
@@ -220,7 +220,7 @@ cHtml += '<head> '
 cHtml += '<meta http-equiv="Content-Type" '
 cHtml += 'content="text/html; charset=iso-8859-1"> '
 cHtml += '<meta name="GENERATOR" content="Microsoft FrontPage Express 2.0"> '
-cHtml += '<title>Solicita็ใo de Compra</title> '
+cHtml += '<title>SolicitaXXo de Compra</title> '
 cHtml += '</head> '
 cHtml += '<body bgcolor="#FFFFFF"> '
 cHtml += '<table width="80%" border="0" bordercolordark="#404040" bgcolor="#FFFFFF"> '
@@ -228,8 +228,8 @@ cHtml += '      <tbody> '
 cHtml += '	  <tr> '
 cHtml += '	  <td width="180"><img src="http://201.20.146.31/Web/sac/imagens/logos/logo_verde_180x50.gif" alt="" /></td> '
 cHtml += '    <td > '
-cHtml += '	<h2><font color="#666666" face="Verdana"><b>Aprova็ใo de '
-cHtml += '    Solicita็ใo de Compra</b></font></h2></td> '
+cHtml += '	<h2><font color="#666666" face="Verdana"><b>AprovaXXo de '
+cHtml += '    SolicitaXXo de Compra</b></font></h2></td> '
 cHtml += '    <table border="1" width="845"> '
 cHtml += '        <tr> '
 cHtml += '            <td width="100" bgcolor="#C0C0C0"><font size="2" '
@@ -248,13 +248,13 @@ cHtml += '        <tr> '
 cHtml += '            <td width="65" bgcolor="#C0C0C0"><font size="2" '
 cHtml += '            face="Verdana"><b>Item da SC</b></font></td> '
 cHtml += '            <td width="222" bgcolor="#C0C0C0"><font size="2" '
-cHtml += '            face="Verdana"><b>Descri็ใo</b></font></td> '
+cHtml += '            face="Verdana"><b>DescriXXo</b></font></td> '
 cHtml += '            <td width="15" bgcolor="#C0C0C0"><font size="2" '
 cHtml += '            face="Verdana"><b>Qtd</b></font></td> '
 cHtml += '            <td width="32" bgcolor="#C0C0C0"><font size="2" '
 cHtml += '            face="Verdana"><b>Unid</b></font></td> '
 cHtml += '            <td width="99" bgcolor="#C0C0C0"><font size="2" '
-cHtml += '            face="Verdana"><b>Pre็o Unitแrio</b></font></td> '
+cHtml += '            face="Verdana"><b>PreXo UnitXrio</b></font></td> '
 cHtml += '            <td width="43" bgcolor="#C0C0C0"><font size="2" '
 cHtml += '            face="Verdana"><b>Total</b></font></td> '
 cHtml += '            <td nowrap bgcolor="#C0C0C0"><font size="2" '
@@ -288,7 +288,7 @@ cHtml += '    <th scope="col"><table width="80%" border="0" bordercolordark="#40
 cHtml += '      <tbody>'
 cHtml += '        <tr>'
 cHtml += '          <td width="180"><img src="http://201.20.146.31/Web/sac/imagens/logos/logo_verde_180x50.gif" alt="" /></td>'
-cHtml += '          <td width="668" valign="top"><div align="left"><strong class="style2"><font color="#666666"><font face="Arial">Solicita็ใo de Compra</font></font></strong></div></td>'
+cHtml += '          <td width="668" valign="top"><div align="left"><strong class="style2"><font color="#666666"><font face="Arial">SolicitaXXo de Compra</font></font></strong></div></td>'
 cHtml += '        </tr>'
 cHtml += '      </tbody>'
 cHtml += '    </table>'
@@ -305,24 +305,24 @@ cHtml += '        <td class="txt006"><span class="style1"><font color="#666666">
 cHtml += '        <td class="txt006"><span class="style1"><font color="#666666">Un. Medida</font></span></td>'
 cHtml += '        <td class="txt006"><span class="style1"><font color="#666666">Quantidade</font></span></td>'
 cHtml += '        <td class="txt006"><span class="style1"><font color="#666666">Desc. Produto</font></span></td>'
-cHtml += '        <td class="txt006"><span class="style1"><font color="#666666">Pre็o</font></span></td>'
+cHtml += '        <td class="txt006"><span class="style1"><font color="#666666">PreXo</font></span></td>'
 cHtml += '      </tr>' */
 Return
 
 
 /*
-ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
-ฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑ
-ฑฑษออออออออออัออออออออออหอออออออัออออออออออออออออออออหออออออัอออออออออออออปฑฑ
-ฑฑบPrograma  ณMT110TOK  บAutor  ณMicrosiga           บ Data ณ  08/25/10   บฑฑ
-ฑฑฬออออออออออุออออออออออสอออออออฯออออออออออออออออออออสออออออฯอออออออออออออนฑฑ
-ฑฑบDesc.     ณ Montagem do Rodap้ do HTLM do corpo do E-mail              บฑฑ
-ฑฑบ          ณ                                                            บฑฑ
-ฑฑฬออออออออออุออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออนฑฑ
-ฑฑบUso       ณ AP                                                        บฑฑ
-ฑฑศออออออออออฯออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออผฑฑ
-ฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑ
-฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿
+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+XXXPrograma  XMT110TOK  XAutor  XMicrosiga           X Data X  08/25/10   XXX
+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+XXXDesc.     X Montagem do RodapX do HTLM do corpo do E-mail              XXX
+XXX          X                                                            XXX
+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+XXXUso       X AP                                                        XXX
+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 */
 
 Static Function MontaRodape(nTotSol)
@@ -347,30 +347,30 @@ cHtml += '        </tr>'
 cHtml += '      </table>      <p>&nbsp;</p></th>'
 cHtml += '  </tr>'
 cHtml += '  <tr>'
-cHtml += '    <th scope="col"><div align="left" ><strong><font color="#666666">Portal Nacional de Sa๚de - Unimed Brasil</font></strong><a href="http://www.ans.gov.br/" title="Visitar o site da ANS" rel="external"><img src="http://www.unimed.com.br/pct/layout/2009-corporativo/imagens/rodape_logo_ans.jpg" alt="Ag๊ncia Nacional de Sa๚de Suplementar" /></a> </div></th>'
+cHtml += '    <th scope="col"><div align="left" ><strong><font color="#666666">Portal Nacional de SaXde - Unimed Brasil</font></strong><a href="http://www.ans.gov.br/" title="Visitar o site da ANS" rel="external"><img src="http://www.unimed.com.br/pct/layout/2009-corporativo/imagens/rodape_logo_ans.jpg" alt="AgXncia Nacional de SaXde Suplementar" /></a> </div></th>'
 cHtml += '  </tr>'
 cHtml += '</table>'
 cHtml += '</body>'
 cHtml += '</html>'
-cHtml +=  CRLF + CRLF	+ "UGPER001 - Este relat๓rio informa quando os filhos dos colaboradores completam/completaram 6, 18 e 24 anos de idade."
+cHtml +=  CRLF + CRLF	+ "UGPER001 - Este relatXrio informa quando os filhos dos colaboradores completam/completaram 6, 18 e 24 anos de idade."
 */
 Return
 
 
 
 /*
-ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
-ฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑ
-ฑฑษออออออออออัออออออออออหอออออออัออออออออออออออออออออหออออออัอออออออออออออปฑฑ
-ฑฑบPrograma  ณMT110TOK  บAutor  ณMicrosiga           บ Data ณ  08/25/10   บฑฑ
-ฑฑฬออออออออออุออออออออออสอออออออฯออออออออออออออออออออสออออออฯอออออออออออออนฑฑ
-ฑฑบDesc.     ณ Fun็ใo para constru็ใo dos itens da SC no corpo do e-mail  บฑฑ
-ฑฑบ          ณ                                                            บฑฑ
-ฑฑฬออออออออออุออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออนฑฑ
-ฑฑบUso       ณ AP                                                        บฑฑ
-ฑฑศออออออออออฯออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออผฑฑ
-ฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑ
-฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿
+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+XXXPrograma  XMT110TOK  XAutor  XMicrosiga           X Data X  08/25/10   XXX
+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+XXXDesc.     X FunXXo para construXXo dos itens da SC no corpo do e-mail  XXX
+XXX          X                                                            XXX
+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+XXXUso       X AP                                                        XXX
+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 */
 
 Static Function MontaItem(cItem,cProduto,cUm,cQuant,cDescri,cPreco,cJustif,cCenCusto,nContad) //cJustif,

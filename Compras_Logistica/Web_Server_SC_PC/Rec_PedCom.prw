@@ -75,7 +75,7 @@ Static Function Valida(Pedido,lMsErroAuto)
 	aAreAux := SY1->(GetArea())
 	DbSelectArea("SY1");DbSetOrder(1)
 	If !(DbSeek(xFilial("SY1")+"000",.F. ))
-		cRetorno := "Não Localizado o Cadastro do Comprador SysOn. Código '000' Tabela SY1"
+		cRetorno := "Nao Localizado o Cadastro do Comprador SysOn. Codigo '000' Tabela SY1"
 		RestArea(aAreAux)
 		Return(.F.)
 	EndIf
@@ -84,7 +84,7 @@ Static Function Valida(Pedido,lMsErroAuto)
 	// Valida se o Fornecedor Existe no cadastro da Unimed-VS
 	cAuxCnpj := StrZero(Pedido:Cabecalho:Fornecedor,14)
 	If !(SA2->(DbSeek(xFilial("SA2")+cAuxCnpj,.F.)))
-		cRetorno := "Fornecedor Nao localizado no Cadastro de Fornecedores. CNPJ:"+Transform(SA2->A2_CGC,"@R 99.999.999/9999-99")+""
+		cRetorno := "Fornecedor Nao localizado no Cadastro de Fornecedores. CNPJ:"+Transform(cAuxCnpj,"@R 99.999.999/9999-99")+""
 		Return(.F.)
 	Else
 
@@ -94,7 +94,7 @@ Static Function Valida(Pedido,lMsErroAuto)
 			nF += 1 ; SA2->( DbSkip() )
 		EndDo
 		If nF > 1
-			cRetorno := "Fornecedor Possui mais de um Cadastro com o mesmo CNPJ:"+Transform(SA2->A2_CGC,"@R 99.999.999/9999-99")+". Deve ser Corrigido."
+			cRetorno := "Fornecedor Possui mais de um Cadastro com o mesmo CNPJ:"+Transform(cAuxCnpj,"@R 99.999.999/9999-99")+". Deve ser Corrigido."
 			Return(.F.)
 		EndIf
 
@@ -105,14 +105,14 @@ Static Function Valida(Pedido,lMsErroAuto)
 
 	// Valida se Fornecedor esta bloqueado
 	If SA2->A2_MSBLQL == "1" //Bloqueado
-		cRetorno := "Este Fornecedor esta com o Cadastro Bloqueado. CNPJ:"+Transform(SA2->A2_CGC,"@R 99.999.999/9999-99")+""
+		cRetorno := "Este Fornecedor esta com o Cadastro Bloqueado. CNPJ:"+Transform(cAuxCnpj,"@R 99.999.999/9999-99")+""
 		Return(.F.)
 	EndIF
 
 	// Validar Unidade Solicitante
 	aDadosFil := FWArrFilAtu("01",cFilHom)
 	If aDadosFil[_CNPJ] <>  StrZero(Pedido:Cabecalho:UnidadeSol,14)
-		cRetorno := "O Solicitante do Pedido não esta Homologado a Receber Pedidos Sys-On. CNPJ:"+Transform( StrZero(Pedido:Cabecalho:UnidadeSol,14),"@R 99.999.999/9999-99")+""
+		cRetorno := "O Solicitante do Pedido nao esta Homologado a Receber Pedidos Sys-On. CNPJ:"+Transform( StrZero(Pedido:Cabecalho:UnidadeSol,14),"@R 99.999.999/9999-99")+""
 		Return(.F.)
 	EndIF
 
@@ -137,14 +137,14 @@ Static Function Valida(Pedido,lMsErroAuto)
 		Return(.F.)
 	Else
 
-		// Valida se Quantidade disponivel na Solicitacao Atende o Item do Pedido e se é o mesmo Produto da Solicitacao
+		// Valida se Quantidade disponivel na Solicitacao Atende o Item do Pedido e se nao e o mesmo Produto da Solicitacao
 		For nPC := 1 to len(Pedido:Detalhes)
 
 			cNSol := StrZero(Pedido:Detalhes[nPC]:NumSC,6)
 			cNIte := StrZero(Pedido:Detalhes[nPC]:ItemSC,4)
 			nQtd  := SToV(Pedido:Detalhes[nPC]:Quantidade)
 			If SldDispSC(cNSol,cNIte,nQtd) < 0
-				cRetorno += "A Solicitacao " + cNSol + " Item "+cNIte+" não possui saldo para atender o " + Alltrim(Pedido:Detalhes[nPC]:obs)+" . "
+				cRetorno += "A Solicitacao " + cNSol + " Item "+cNIte+" Nao possui saldo para atender o " + Alltrim(Pedido:Detalhes[nPC]:obs)+" . "
 				lRet := .F.
 			ElseIf Alltrim(Pedido:Detalhes[nPC]:Produto) <> Alltrim(SC1->C1_PRODUTO)
 				cRetorno += "O Produto "+Alltrim(Pedido:Detalhes[nPC]:Produto)+" no pedido nao correponde ao Solicitado "+Alltrim(SC1->C1_PRODUTO)+". " + Alltrim(Pedido:Detalhes[nPC]:obs) + " . "
