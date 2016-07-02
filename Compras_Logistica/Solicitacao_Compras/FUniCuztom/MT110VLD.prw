@@ -7,7 +7,7 @@
 **---------------------------------------------------------------------------**
 ** DESCRICAO: Localizado na Solicitacao de Compras, este ponto de entrada    **
 **          : e responsavel em validar o registro posicionado na             **
-**          : Solicitacao de Compras antes de executar as operaXXes de       **
+**          : Solicitacao de Compras antes de executar as operacoes de       **
 **          : Inclusao, Alteracao, exclusao e copia. Se retornar .T.,        **
 **          : deve executar as operacoes de Inclusao, Alteracao, exclusao    **
 **          : e copia ou .F. para interromper o processo.                    **
