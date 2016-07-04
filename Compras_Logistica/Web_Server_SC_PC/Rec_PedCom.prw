@@ -303,7 +303,7 @@ Static Function RetProd(CProdFor)//| Retorno de Ocorrencia do Recebimento do Ped
 Static Function GetCond(cCond)//| Retorno de Ocorrencia do Recebimento do Pedido
 	*******************************************************************************
 
-	Local cSql := "select e4_Codigo from se4010 where e4_cond = '"+Alltrim(cCond)+"' and e4_tipo = '1' and Substr(e4_Codigo,1,1) = '6' and Rownum = 1 and d_e_l_e_t_ = ' '"
+	Local cSql := "select e4_Codigo from se4010 where e4_cond = '"+Alltrim(cCond)+"' and e4_tipo = '1' and Substr(e4_Codigo,1,1) = '8' and Rownum = 1 and d_e_l_e_t_ = ' '"
 
 	If( Select("TACP") <> 0 )
 		DbSelectArea("TACP");DbCloseArea()
