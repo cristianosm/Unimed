@@ -12,18 +12,35 @@
 
 #Define _ENTER		CHR(13)+CHR(10)
 
+/*****************************************************************************\
+**---------------------------------------------------------------------------**
+** FUNCAO    :Rec_PedCom    | AUTOR : Cristiano Machado  | DATA : 18/02/2016 **
+**---------------------------------------------------------------------------**
+** DESCRICAO : Processa o Pedido de compra Recebido pelo WS_PedCom, Com      **
+**           : validacoes e caso OK. Executo a Inclusao por MSAutoExec       **
+**---------------------------------------------------------------------------**
+** USO       : Especifico para o cliente Unimed Vale do Sinos                **
+**---------------------------------------------------------------------------**
+**---------------------------------------------------------------------------**
+**            ATUALIZACOES SOFRIDAS DESDE A CONSTRUCAO INICIAL.              **
+**---------------------------------------------------------------------------**
+**   PROGRAMADOR   |   DATA   |            MOTIVO DA ALTERACAO               **
+**---------------------------------------------------------------------------**
+**                 |          |                                              **
+**                 |          |                                              **
+\*---------------------------------------------------------------------------*/
 *******************************************************************************
 User Function Rec_PedCom(Pedido,lMsErroAuto)
-	*******************************************************************************
+*******************************************************************************
 
-	PrepVareAmb()
+	PrepVareAmb() //| Prepara as Variaveis,Tabelas e Ambiente Utilizado...
 
-	If Valida(@Pedido,@lMsErroAuto)
+	If Valida(@Pedido,@lMsErroAuto)//| Valida o Pedido Recebido
 
-		Estrutura(@aCab, @adet)
+		Estrutura(@aCab, @adet) // Monta a Estrutura de Arrays para o AutoExec
 
 		Begin Transaction
-			ExecAuto(@aCab, @adet,@lMsErroAuto)
+			ExecAuto(@aCab, @adet,@lMsErroAuto)//| Executa o MSExecAuto de Inclusao do pedido de compras
 		End Transaction
 
 	Else
@@ -33,9 +50,9 @@ User Function Rec_PedCom(Pedido,lMsErroAuto)
 	SC7->(ConfirmSX8())
 
 	Return(Substr(cRetorno,1,177))// Ajusta o Limite do Retorno
-	*******************************************************************************
-Static Function PrepVareAmb()
-	*******************************************************************************
+*******************************************************************************
+Static Function PrepVareAmb()//| Prepara as Variaveis,Tabelas e Ambiente Utilizado...
+*******************************************************************************
 
 	DbSelectArea("SC1");DbSetOrder(1)
 	DbSelectArea("SA2");DbSetOrder(3)
@@ -60,9 +77,9 @@ Static Function PrepVareAmb()
 	cNumSc7 := GetSX8Num("SC7","C7_NUM") //"A12875"
 
 	Return()
-	*******************************************************************************
-Static Function Valida(Pedido,lMsErroAuto)
-	*******************************************************************************
+*******************************************************************************
+Static Function Valida(Pedido,lMsErroAuto)//| Valida o Pedido Recebido
+*******************************************************************************
 	Local aAreAux := Nil
 	Local lRet	  := .T.
 
@@ -129,8 +146,9 @@ Static Function Valida(Pedido,lMsErroAuto)
 		If Empty(cProd)
 			cRetorno += "O Item " + cValToChar(Pedido:Detalhes[nPC]:Item) + " Produto: "+Alltrim(Pedido:Detalhes[nPC]:ProdFor)+" nao possui cadastro de Produto x Fornecedor ("+cForeLj+")"
 			lRet := .F.
-		Else
+		Else // Aproveita e Alimenta o Codigo de Produto Unimed-SV e Corrige o Item cao seja envia fora de ordem, para ser utilizado na Inclusao do Pedido
 			Pedido:Detalhes[nPC]:Produto := cProd
+			Pedido:Detalhes[nPC]:Item := nPC
 		EndIf
 	Next
 	If !lRet
@@ -183,17 +201,17 @@ Static Function Valida(Pedido,lMsErroAuto)
 
 	Return(lRet)
 *******************************************************************************
-Static Function Estrutura(Cab,adet)
+Static Function Estrutura(Cab,adet)// Monta a Estrutura de Arrays para o AutoExec
 *******************************************************************************
 
-	MaCab(@aCab)
+	MaCab(@aCab)//| Alimenta o Array do Cabecalho do Pedido para o MSAutoExec
 
-	MDet(@adet)
+	MDet(@adet)//| Alimenta o Array dos detalhes do Pedido para o MSAutoExec
 
 	Return()
-	*******************************************************************************
-Static Function MaCab(Cab)
-	*******************************************************************************
+*******************************************************************************
+Static Function MaCab(Cab)//| Alimenta o Array do Cabecalho do Pedido para o MSAutoExec
+*******************************************************************************
 
 	aAdd(aCab, {'C7_NUM'	, cNumSc7 							, Nil})	//--Numero do Pedido
 	aAdd(aCab, {'C7_EMISSAO', StoD(Pedido:Cabecalho:Emissao)	, Nil})	//--Data de Emissao
@@ -212,9 +230,9 @@ Static Function MaCab(Cab)
 	EndIf
 
 	Return()
-	*******************************************************************************
-Static Function MDet(adet)
-	*******************************************************************************
+*******************************************************************************
+Static Function MDet(adet)//| Alimenta o Array dos detalhes do Pedido para o MSAutoExec
+*******************************************************************************
 
 	For nPC := 1 to len(Pedido:Detalhes)
 
@@ -227,7 +245,7 @@ Static Function MDet(adet)
 		{"C7_PRECO"  	,SToV(oItem:PrcUnit	 )		,nil},;
 		{"C7_TOTAL"  	,SToV(oItem:Total	 )		,nil},;
 		{"C7_DATPRF"	,StoD(oItem:DataEntr)		,nil},;
-		{"C7_OBS"    	,oItem:Obs					,nil},; // ESTOU RECEBENDO DO SYSON| pegar da Solicitacao
+		{"C7_OBS"    	,GetObs(oItem)    		    ,nil},; // ESTOU RECEBENDO DO SYSON| pegar da Solicitacao
 		{"C7_NUMSC"   	,StrZero(oItem:NumSC,6)		,nil},;
 		{"C7_ITEMSC"  	,StrZero(oItem:ItemSC,4)	,nil},;
 		{"C7_QTDSOL"  	,SToV(oItem:Quantidade)		,nil},;
@@ -239,7 +257,7 @@ Static Function MDet(adet)
 
 	Return()
 	*******************************************************************************
-Static Function ExecAuto(aCab, adet ,lMsErroAuto)
+Static Function ExecAuto(aCab, adet ,lMsErroAuto)//| Executa o MSExecAuto de Inclusao do pedido de compras
 	*******************************************************************************
 
 	If Len( aCab ) > 0 .And. Len( aDet ) > 0
@@ -247,7 +265,7 @@ Static Function ExecAuto(aCab, adet ,lMsErroAuto)
 		MSExecAuto( {|v,x,y,z,w| MATA120(v,x,y,z,w)},PEDCOMPRA, aCab, aDet, INCLUI, .F. )
 
 		If lMsErroAuto
-			cRetorno := AjusRet()
+			cRetorno := AjusRet()//| Trata a String de Retorno para ficar mais legivel ao devolver ao WS-Syson
 			Disarmtransaction()
 		Else
 			cRetorno := cNumSc7
@@ -259,9 +277,9 @@ Static Function ExecAuto(aCab, adet ,lMsErroAuto)
 	EndIF
 
 	Return()
-	*******************************************************************************
-Static Function AjusRet()
-	*******************************************************************************
+*******************************************************************************
+Static Function AjusRet()//| Trata a String de Retorno para ficar mais legivel ao devolver ao WS-Syson
+*******************************************************************************
 
 	Local cTxtLog := NomeAutoLog()
 	Local cTxtAux := ""
@@ -283,25 +301,25 @@ Static Function AjusRet()
 	EndIf
 
 	Return(cTxtAux)
-	*******************************************************************************
-Static Function SToV(cString)//| Converte String para Number
-	*******************************************************************************
+*******************************************************************************
+Static Function SToV(cString)//| Converte Char para Number
+*******************************************************************************
 	Local nVal := 0
 
 	nVal := Val(StrTran(cString,",","."	))
 
 	Return(nVal)
-	*******************************************************************************
-Static Function RetProd(CProdFor)//| Retorno de Ocorrencia do Recebimento do Pedido
-	*******************************************************************************
+*******************************************************************************
+Static Function RetProd(CProdFor)//| Retorna o Produto x Fornecedor referente a UnimedCentral, necessario para a integracao
+*******************************************************************************
 	Local cProduto
 
 	cProduto := Alltrim( Posicione("SA5",14,xFilial("SA5")+"AS005201"+CProdFor,"A5_PRODUTO"))
 
 	Return(cProduto)
-	*******************************************************************************
-Static Function GetCond(cCond)//| Retorno de Ocorrencia do Recebimento do Pedido
-	*******************************************************************************
+*******************************************************************************
+Static Function GetCond(cCond)//| Obtem a Condicao de Pagamento, conforme o informado no Pedido pelo Ws-Syson
+*******************************************************************************
 
 	Local cSql := "select e4_Codigo from se4010 where e4_cond = '"+Alltrim(cCond)+"' and e4_tipo = '1' and Substr(e4_Codigo,1,1) = '8' and Rownum = 1 and d_e_l_e_t_ = ' '"
 
@@ -316,9 +334,9 @@ Static Function GetCond(cCond)//| Retorno de Ocorrencia do Recebimento do Pedido
 	DbSelectArea("TACP");DbCloseArea()
 
 	Return(cCond)
-	*******************************************************************************
-Static Function SldDispSC(cSol, cItem, nQuant)
-	*******************************************************************************
+*******************************************************************************
+Static Function SldDispSC(cSol, cItem, nQuant)//Verifica o saldo disponivel na SC relacionada ao pedido.
+*******************************************************************************
 	Local nSaldo := -1
 
 	DbSelectArea("SC1")
@@ -327,3 +345,12 @@ Static Function SldDispSC(cSol, cItem, nQuant)
 	EndIf
 
 Return(nSaldo)
+*******************************************************************************
+Static Function GetObs(oItem) //Tratamento e Ajuste da Obs recebido pelo Sys-On
+*******************************************************************************
+Local cObs := ""
+
+cObs += "P.SysOn [" + Substr( oItem:Obs , At(" ",oItem:Obs) + 1 , 10 )+"] "
+cObs += Alltrim( Posicione("SC1",1,xFilial("SC1") + StrZero(oItem:NumSC,6) + StrZero(oItem:ItemSC,4) ,"C1_OBS") )
+
+Return(cObs)

@@ -1,25 +1,29 @@
-//|XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-//|XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-//|XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-//|XXXPrograma  |MT110VLD  :Autor  :Microsiga           é Data é  08/20/10
-//|XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-//|XXXDesc.     é Localizado na SolicitaXXo de Compras, este ponto de entradaXXX
-//|XXX			 é e responsavel em validar o registro posicionado da         XXX
-//|XXX			 é Solicitacao de Compras antes de executar as operaXXes de   XXX
-//|XXX			 é Inclusao, Alteracao, exclusao e copia. Se retornar .T.,    XXX
-//|XXX			 é deve executar as operaXXes de Inclusao, Alteracao, exclusaoXXX
-//|XXX			 é e copia ou .F. para interromper o processo.                XXX
-//|XXX          é                                                            XXX
-//|XXX          e															  XXX
-//|XXX          é Obs: Bloquear Alteracao/Exclusao da SC caso esteja em      XXX
-//|XXX          é aprovacao												  XXX
-//|XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-//|XXXUso       é AP                                                         XXX
-//|XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXͼXX
-//|XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-//|XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+#Include "RWMAKE.CH"
 
-#include "RWMAKE.CH"
+/*/
+/*****************************************************************************\
+**---------------------------------------------------------------------------**
+** FUNCAO   : MT110VLD   | AUTOR : Microsiga          | DATA : 08/20/2010    **
+**---------------------------------------------------------------------------**
+** DESCRICAO: Localizado na Solicitacao de Compras, este ponto de entrada    **
+**          : e responsavel em validar o registro posicionado na             **
+**          : Solicitacao de Compras antes de executar as operacoes de       **
+**          : Inclusao, Alteracao, exclusao e copia. Se retornar .T.,        **
+**          : deve executar as operacoes de Inclusao, Alteracao, exclusao    **
+**          : e copia ou .F. para interromper o processo.                    **
+**---------------------------------------------------------------------------**
+** USO      : Obs: Bloquear Alteracao/Exclusao da SC caso esteja em          **
+**          : aprovacao	                                                     **
+**          :                                                                **
+**---------------------------------------------------------------------------**
+**            ATUALIZACOES SOFRIDAS DESDE A CONSTRUCAO INICIAL.              **
+**---------------------------------------------------------------------------**
+**   PROGRAMADOR   |   DATA   |            MOTIVO DA ALTERACAO               **
+**---------------------------------------------------------------------------**
+**Cristiano Machado|23/03/2016| Bloquei de Alteracao de Solcitacao Sys-on    **
+**                 |          |                                              **
+\*---------------------------------------------------------------------------*/
+
 *******************************************************************************
 User Function MT110VLD()
 *******************************************************************************
@@ -51,12 +55,12 @@ User Function MT110VLD()
 					ExpL1    := .F.
 					MsgBox("Nao e possivel executar operacao, Usuario nao autorizado!","Atencao","ERROR")
 				EndIf
-			
+
 			ElseIf cUsuAdm <> "1" //Somente usuario administrador pode excluir SC.
 				ExpL1 := .F.
-			
+
 				IIw_MsgBox( "Nao e possivel executar operacao, Sc em Aprovacao/Aprovada !","Atencao","ERROR")
-				
+
 			EndIf
 
 		ElseIf SC1->C1_APROV <> "B"

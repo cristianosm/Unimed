@@ -10,11 +10,12 @@
 
 /*****************************************************************************\
 **---------------------------------------------------------------------------**
-** FUNÇÃO   :Client_EnvSol | AUTOR : Cristiano Machado  | DATA : 18/02/2016  **
+** FUNCAO    :Client_EnvSol | AUTOR : Cristiano Machado  | DATA : 18/02/2016 **
 **---------------------------------------------------------------------------**
-** DESCRIÇÃO:Envia Solcitação de Compras ao Sys-on Através do WS_Client_SysOn**
+** DESCRICAO : Envia Solcitacao de Compras ao Sys-on Atravess do WS          **
+**           : Client_Syson                                                  **
 **---------------------------------------------------------------------------**
-** USO      : Especifico para o cliente Unimed Vale do Sinos                 **
+** USO       : Especifico para o cliente Unimed Vale do Sinos                **
 **---------------------------------------------------------------------------**
 **---------------------------------------------------------------------------**
 **            ATUALIZACOES SOFRIDAS DESDE A CONSTRUCAO INICIAL.              **

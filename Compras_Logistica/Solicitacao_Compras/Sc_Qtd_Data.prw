@@ -10,7 +10,7 @@
 #Define P_CC 		aScan(aHeader, {|x| AllTrim(x[2])=='C1_CC'})
 #Define P_OBS 		aScan(aHeader, {|x| AllTrim(x[2])=='C1_OBS'})
 #Define P_YJUSTIF 	aScan(aHeader, {|x| AllTrim(x[2])=='C1_YJUSTIF'})
-#Define P_CONTA 	aScan(aHeader, {|x| AllTrim(x[2])=='C1_CONTA'})
+
 
 /*/
 /*****************************************************************************\
@@ -19,7 +19,8 @@
 **---------------------------------------------------------------------------**
 ** DESCRICAO: Este Programa tem o Objetivo de abrir uma Tela Atraves da Tecla**
 **          : de atalho F4. Quando Posicionado em modo Edicao no Campo       **
-**          : C1_QUANT na Solicitacao de Compras                             **
+**          : C1_QUANT na Solicitacao de Compras. Para Facilicar a           **
+**          : distribuicao de um determidado produto                         **
 **---------------------------------------------------------------------------**
 ** USO      : Especifico para o cliente Unimed-VS                            **
 **---------------------------------------------------------------------------**
@@ -211,7 +212,7 @@ Static Function IniaColsN(aColsN, aHeaderN) //| Funcao que cria a estrutura Acol
 
 	Return()
 	*******************************************************************************
-Static Function X3CpoHeader(cCampo)
+Static Function X3CpoHeader(cCampo)// Obtem estrutura do Header baseado no campo informado.
 	*******************************************************************************
 	Local aAreaAnt := GetArea()
 	Local aAreaSx3 := SX3->( GetArea() )
