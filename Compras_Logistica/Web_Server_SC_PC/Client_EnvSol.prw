@@ -28,7 +28,7 @@
 *******************************************************************************
 User function Client_EnvSol()
 *******************************************************************************
-
+//teste
 	Private cNumSol	:= SC1->C1_NUM
 	Private nRecSC1	:= 0 			// Salva o Recno do Item 0001
 	Private cForeLj	:= "AS005201" 	// Unimed Central loja 01
