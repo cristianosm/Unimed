@@ -25,6 +25,8 @@ User Function MT110GRV()
 //Caso PARAMIXB == .T.(Copia da solicitao de compras esta ativa), se .F.(Copia no esta ativa)
 lExp1 :=  PARAMIXB[1]
 
+
+
 //| Salva o Conteudo da Variavel cIntWSo Que existe no Cab. da Sol de Compras na Tebla SC1
 SvCpoISo()
 
@@ -36,6 +38,7 @@ Return()
 Static Function SvCpoISo()//| Salva o Conteudo da Variavel cIntWSo Que existe no Cab. da Sol de Compras na Tebla SC1
 *******************************************************************************
 
+
 RecLock("SC1",.F.)
 SC1->C1_INTWSO := cIntWSo
 If cIntWSo == "S" .And. SC1->C1_TX == "  " //| Solicitação Sys-On
@@ -43,8 +46,17 @@ If cIntWSo == "S" .And. SC1->C1_TX == "  " //| Solicitação Sys-On
 EndIf
 MsUnlock()
 
-Return()
+ // So envia o email uma vez o email ....
+If Type('cLastSendSc') == 'U'
+	Public cLastSendSc := ""
+Endif
+If cLastSendSc <> SC1->C1_NUM
+	U_SMProxSys( SC1->C1_NUM , "Solicitacao Sys-On "+SC1->C1_NUM+", aguardando Liberacao.", "Incluida SC Sys-On","C" )
 
+	cLastSendSc := SC1->C1_NUM
+EndIF
+
+Return()
 *******************************************************************************
 Static Function CustomUni()//| Customizacao que já existia no Fonte da Unimed MT112GRV. Deve ser Substituido por este.
 *******************************************************************************

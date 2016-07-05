@@ -29,9 +29,10 @@ Local aCorOrigi := aClone(PARAMIXB[1])  // aCores
 Local aCorSysOn := {}
 
 aAdd(aCorSysOn,{ "C1_APROV=='B' .And. C1_INTWSO == 'S' .And. C1_TX == 'AG' .And. C1_QUJE == 0" 		, "BR_CINZA_OCEAN.BMP"	})  //-- Sys-on: Bloqueada.
-aAdd(aCorSysOn,{ "C1_APROV<>'B' .And. C1_INTWSO == 'S' .And. C1_TX == 'AG' .And. C1_QUJE == 0" 		, "BR_MARRON_OCEAN.BMP"	})  //-- Sys-on: Aguardando.
+aAdd(aCorSysOn,{ "C1_APROV<>'B' .And. C1_INTWSO == 'S' .And. C1_TX == 'AG' .And. C1_QUJE == 0" 		, "BR_LARANJA_OCEAN.BMP"})  //-- Sys-on: Aguardando.
 aAdd(aCorSysOn,{ "C1_APROV<>'B' .And. C1_INTWSO == 'S' .And. C1_TX == 'TR' .And. C1_QUJE == 0" 		, "BR_AZUL_OCEAN.BMP"	})  //-- Sys-on: Transmitida.
-aAdd(aCorSysOn,{ "C1_APROV<>'B' .And. C1_INTWSO == 'S' .And. C1_TX == '  ' .And. C1_QUJE>=C1_QUANT" , "BR_VIOLETA.PNG"		})  //-- Sys-on: Atendida.
+aAdd(aCorSysOn,{ "C1_APROV<>'B' .And. C1_INTWSO == 'S' .And. C1_QUJE>0 .And. C1_QUJE < C1_QUANT" 	, "BR_MARRON_OCEAN.BMP"		})  //-- Sys-on: Atendida.
+aAdd(aCorSysOn,{ "C1_APROV<>'B' .And. C1_INTWSO == 'S' .And. C1_QUJE>=C1_QUANT" 					, "BR_BRANCO_OCEAN.BMP"		})  //-- Sys-on: Atendida.
 
 //| Para que as Legendas do Sys-on tenha Preferencia no Filtro|
 For nA := 1 To Len(aCorOrigi)
