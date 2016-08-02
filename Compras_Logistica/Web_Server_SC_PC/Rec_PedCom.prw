@@ -68,8 +68,11 @@ Static Function PrepVareAmb()//| Prepara as Variaveis,Tabelas e Ambiente Utiliza
 	_SetOwnerPrvt( 'cNumSc7'		, ""					)// Armazena o Numero de Pedido Obtido..
 	_SetOwnerPrvt( 'cCondPag'		, ""					)// Armazena o Numero de Pedido Obtido..
 	_SetOwnerPrvt( 'cItAjust'		, ""					)// Armazena informacoes sobre o item ajustado
+	_SetOwnerPrvt( 'cFilSA2'		, ""					)// Armazena informacoes sobre o item ajustado
 
 	cFilAnt			:= cFilHom
+	cFilSA2			:= "A2_MSBLQL = ' ' .Or. A2_MSBLQL = '2'"
+	SA2->( dbSetFilter ( {|| &cFilSA2 },cFilSA2) ) // Remove os Fornecedores Bloqueados...
 
 	RpcSetType( 3 )
 
@@ -106,6 +109,9 @@ Static Function Valida(Pedido,lMsErroAuto)//| Valida o Pedido Recebido
 		Return(.F.)
 	Else
 
+		cFornece := SA2->A2_COD
+		cLoja	 := SA2->A2_LOJA
+
 		// Valida se Fornecedor Retornou apenas uma loja apartir do CNJ.
 		nF := 0
 		While cAuxCnpj == SA2->A2_CGC .And. !Eof() // Valida se Fornecedor Retornou apenas uma loja
@@ -116,16 +122,13 @@ Static Function Valida(Pedido,lMsErroAuto)//| Valida o Pedido Recebido
 			Return(.F.)
 		EndIf
 
-		cFornece := SA2->A2_COD
-		cLoja	 := SA2->A2_LOJA
-
 	EndIF
 
 	// Valida se Fornecedor esta bloqueado
-	If SA2->(DbSeek(xFilial("SA2")+cAuxCnpj,.F.)) .And. SA2->A2_MSBLQL == "1" //Bloqueado
-		cRetorno := "Este Fornecedor esta com o Cadastro Bloqueado. CNPJ:"+Transform(cAuxCnpj,"@R 99.999.999/9999-99")+""
-		Return(.F.)
-	EndIF
+	//If SA2->(DbSeek(xFilial("SA2")+cAuxCnpj,.F.)) .And. SA2->A2_MSBLQL == "1" //Bloqueado
+	//	cRetorno := "Este Fornecedor esta com o Cadastro Bloqueado. CNPJ:"+Transform(cAuxCnpj,"@R 99.999.999/9999-99")+""
+	//	Return(.F.)
+	//EndIF
 
 	// Validar Unidade Solicitante
 	aDadosFil := FWArrFilAtu("01",cFilHom)
@@ -171,7 +174,7 @@ Static Function Valida(Pedido,lMsErroAuto)//| Valida o Pedido Recebido
 		For nPC := 1 to len(Pedido:Detalhes)
 			cProd := RetProd(Pedido:Detalhes[nPC]:ProdFor)
 			If Empty(cProd)
-				cRetorno += "O Item " + cValToChar(Pedido:Detalhes[nPC]:Item) + " Produto: "+Alltrim(Pedido:Detalhes[nPC]:ProdFor)+" nao possui cadastro de Produto x Fornecedor ("+cForeLj+")"
+				cRetorno += "O Item " + cValToChar(Pedido:Detalhes[nPC]:Item) + " Produto: "+Alltrim(Pedido:Detalhes[nPC]:ProdFor)+" nao possui cadastro de Produto x Fornecedor ("+cFornece+cLoja+")"
 				lRet := .F.
 			Else // Aproveita e Alimenta o Codigo de Produto Unimed-SV e Corrige o Item cao seja envia fora de ordem, para ser utilizado na Inclusao do Pedido
 				Pedido:Detalhes[nPC]:Produto := cProd
@@ -203,6 +206,8 @@ Static Function Valida(Pedido,lMsErroAuto)//| Valida o Pedido Recebido
 			EndIF
 		EndIf
 	EndIf
+
+	SA2->( DbClearFilter() )
 
 	Return(lRet)
 *******************************************************************************
