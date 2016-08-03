@@ -49,6 +49,10 @@ WsMethod RecebePedido WsReceive Pedido WsSend oRetorno WsService WS_PEDCOM //| M
 	Else
 		oRetorno:Pedido:Retorno:Ocorrencia := "S"
 		oRetorno:Pedido:Retorno:Observacao := "Pedido Recebido com Sucesso...Numero: " + cRetorno
+
+		//| SendMail()
+		U_SMProxSys( StrZero(Pedido:Detalhes[1]:NumSC,6) , oRetorno:Pedido:Retorno:Observacao, "Pedido Recebido do Sys-on" , "T" )
+
 	EndIf
 
 Return .T.

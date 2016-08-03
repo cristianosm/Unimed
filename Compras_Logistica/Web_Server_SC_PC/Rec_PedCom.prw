@@ -49,7 +49,7 @@ User Function Rec_PedCom(Pedido,lMsErroAuto)
 
 	SC7->(ConfirmSX8())
 
-	Return(Substr(cRetorno,1,177))// Ajusta o Limite do Retorno
+	Return( Substr(cRetorno, 1 , If( Len(cRetorno)>177,177, Len(cRetorno)) ) )// Ajusta o Limite do Retorno
 *******************************************************************************
 Static Function PrepVareAmb()//| Prepara as Variaveis,Tabelas e Ambiente Utilizado...
 *******************************************************************************
@@ -59,7 +59,7 @@ Static Function PrepVareAmb()//| Prepara as Variaveis,Tabelas e Ambiente Utiliza
 
 	_SetOwnerPrvt( 'cFornece'		, "AS0052" 				)//Codigo Unimed Centtral [AS0052][01] |
 	_SetOwnerPrvt( 'cLoja'			, "01" 					)//Loja Unimed Centtral [AS0052][01] |
-	_SetOwnerPrvt( 'cFilHom'		, "13" 					)//Filial Homologada a Receber Enviar Solicitacao e Receber Pedidos Sys-ON
+	_SetOwnerPrvt( 'cFilHom'		, SuperGetMv("UM_FILHOMS",.F.,"13"))// Filial Homologada a Receber Enviar Solicitacao e Receber Pedidos Sys-ON 					)//Filial Homologada a Receber Enviar Solicitacao e Receber Pedidos Sys-ON
 	_SetOwnerPrvt( 'cRetorno'		, "" 					)//Variavel de Retorno de Erro e Validacao
 	_SetOwnerPrvt( 'lRpcSet'		, .F. 					)//Variavel de Retorno da Montagem do Ambiente
 	_SetOwnerPrvt( 'aCab'			, {} 					)//Variavel a ser utilizada no Cabecalho do MSExecAuto
@@ -67,8 +67,12 @@ Static Function PrepVareAmb()//| Prepara as Variaveis,Tabelas e Ambiente Utiliza
 	_SetOwnerPrvt( 'oItem'			, WSClassNew("N_ITEM")	)//oItem Auxiliar para receber os dados do WS
 	_SetOwnerPrvt( 'cNumSc7'		, ""					)// Armazena o Numero de Pedido Obtido..
 	_SetOwnerPrvt( 'cCondPag'		, ""					)// Armazena o Numero de Pedido Obtido..
+	_SetOwnerPrvt( 'cItAjust'		, ""					)// Armazena informacoes sobre o item ajustado
+	_SetOwnerPrvt( 'cFilSA2'		, ""					)// Armazena informacoes sobre o item ajustado
 
 	cFilAnt			:= cFilHom
+	cFilSA2			:= "A2_MSBLQL = ' ' .Or. A2_MSBLQL = '2'"
+	SA2->( dbSetFilter ( {|| &cFilSA2 },cFilSA2) ) // Remove os Fornecedores Bloqueados...
 
 	RpcSetType( 3 )
 
@@ -105,6 +109,9 @@ Static Function Valida(Pedido,lMsErroAuto)//| Valida o Pedido Recebido
 		Return(.F.)
 	Else
 
+		cFornece := SA2->A2_COD
+		cLoja	 := SA2->A2_LOJA
+
 		// Valida se Fornecedor Retornou apenas uma loja apartir do CNJ.
 		nF := 0
 		While cAuxCnpj == SA2->A2_CGC .And. !Eof() // Valida se Fornecedor Retornou apenas uma loja
@@ -115,16 +122,13 @@ Static Function Valida(Pedido,lMsErroAuto)//| Valida o Pedido Recebido
 			Return(.F.)
 		EndIf
 
-		cFornece := SA2->A2_COD
-		cLoja	 := SA2->A2_LOJA
-
 	EndIF
 
 	// Valida se Fornecedor esta bloqueado
-	If SA2->A2_MSBLQL == "1" //Bloqueado
-		cRetorno := "Este Fornecedor esta com o Cadastro Bloqueado. CNPJ:"+Transform(cAuxCnpj,"@R 99.999.999/9999-99")+""
-		Return(.F.)
-	EndIF
+	//If SA2->(DbSeek(xFilial("SA2")+cAuxCnpj,.F.)) .And. SA2->A2_MSBLQL == "1" //Bloqueado
+	//	cRetorno := "Este Fornecedor esta com o Cadastro Bloqueado. CNPJ:"+Transform(cAuxCnpj,"@R 99.999.999/9999-99")+""
+	//	Return(.F.)
+	//EndIF
 
 	// Validar Unidade Solicitante
 	aDadosFil := FWArrFilAtu("01",cFilHom)
@@ -140,64 +144,70 @@ Static Function Valida(Pedido,lMsErroAuto)//| Valida o Pedido Recebido
 		Return(.F.)
 	EndIf
 
-	// Validar Cadastro de Prod x For
+
+
+	//| Valida se a Solicitacao eh Sys-ON, Esta Libera e ja Foi Transmitida. Deve Estar POSICIONADO no SC1
 	For nPC := 1 to len(Pedido:Detalhes)
-		cProd := RetProd(Pedido:Detalhes[nPC]:ProdFor)
-		If Empty(cProd)
-			cRetorno += "O Item " + cValToChar(Pedido:Detalhes[nPC]:Item) + " Produto: "+Alltrim(Pedido:Detalhes[nPC]:ProdFor)+" nao possui cadastro de Produto x Fornecedor ("+cForeLj+")"
+		cNSol := StrZero(Pedido:Detalhes[nPC]:NumSC,6)
+		cNIte := StrZero(Pedido:Detalhes[nPC]:ItemSC,4)
+		SC1->(DbSeek(xFilial("SC1")+cNSol+cNIte,.F.))
+		If SC1->C1_INTWSO <> "S"  // Sys-On
+			cRetorno += "A Solicitacao " + cNSol + " nao e uma Solicitacao Sys-On...  "
 			lRet := .F.
-		Else // Aproveita e Alimenta o Codigo de Produto Unimed-SV e Corrige o Item cao seja envia fora de ordem, para ser utilizado na Inclusao do Pedido
-			Pedido:Detalhes[nPC]:Produto := cProd
-			Pedido:Detalhes[nPC]:Item := nPC
+			Exit
+		ElseIf SC1->C1_APROV <> "L" // Aprovada
+			cRetorno += "A Solicitacao " + cNSol + " nao esta APROVADA... "
+			lRet := .F.
+			Exit
+		ElseIf SC1->C1_TX <> "TR" // Ja Transmitida
+			cRetorno += "A Solicitacao " + cNSol + " nao foi Transmitida ao Sys-on... "
+			lRet := .F.
+			Exit
 		EndIf
+
 	Next
 	If !lRet
 		Return(.F.)
 	Else
 
-		// Valida se Quantidade disponivel na Solicitacao Atende o Item do Pedido e se nao e o mesmo Produto da Solicitacao
+		// Validar Cadastro de Prod x For
 		For nPC := 1 to len(Pedido:Detalhes)
-
-			cNSol := StrZero(Pedido:Detalhes[nPC]:NumSC,6)
-			cNIte := StrZero(Pedido:Detalhes[nPC]:ItemSC,4)
-			nQtd  := SToV(Pedido:Detalhes[nPC]:Quantidade)
-			If SldDispSC(cNSol,cNIte,nQtd) < 0
-				cRetorno += "A Solicitacao " + cNSol + " Item "+cNIte+" Nao possui saldo para atender o " + Alltrim(Pedido:Detalhes[nPC]:obs)+" . "
+			cProd := RetProd(Pedido:Detalhes[nPC]:ProdFor)
+			If Empty(cProd)
+				cRetorno += "O Item " + cValToChar(Pedido:Detalhes[nPC]:Item) + " Produto: "+Alltrim(Pedido:Detalhes[nPC]:ProdFor)+" nao possui cadastro de Produto x Fornecedor ("+cFornece+cLoja+")"
 				lRet := .F.
-			ElseIf Alltrim(Pedido:Detalhes[nPC]:Produto) <> Alltrim(SC1->C1_PRODUTO)
-				cRetorno += "O Produto "+Alltrim(Pedido:Detalhes[nPC]:Produto)+" no pedido nao correponde ao Solicitado "+Alltrim(SC1->C1_PRODUTO)+". " + Alltrim(Pedido:Detalhes[nPC]:obs) + " . "
-				lRet := .F.
+			Else // Aproveita e Alimenta o Codigo de Produto Unimed-SV e Corrige o Item cao seja envia fora de ordem, para ser utilizado na Inclusao do Pedido
+				Pedido:Detalhes[nPC]:Produto := cProd
+				Pedido:Detalhes[nPC]:Item := nPC
 			EndIf
-
 		Next
+
 		If !lRet
 			Return(.F.)
 		Else
 
-			//| Valida se a Solicitacao eh Sys-ON, Esta Libera e ja Foi Transmitida. Deve Estar POSICIONADO no SC1
+			// Valida se Quantidade disponivel na Solicitacao Atende o Item do Pedido e se nao e o mesmo Produto da Solicitacao
 			For nPC := 1 to len(Pedido:Detalhes)
 
-				If SC1->C1_INTWSO <> "S"  // Sys-On
-					cRetorno += "A Solicitacao " + cNSol + " nao e uma Solicitacao Sys-On...  "
+				cNSol := StrZero(Pedido:Detalhes[nPC]:NumSC,6)
+				cNIte := StrZero(Pedido:Detalhes[nPC]:ItemSC,4)
+				nQtd  := SToV(Pedido:Detalhes[nPC]:Quantidade)
+				If SldDispSC(cNSol,cNIte,nQtd) < 0
+					cRetorno += "A Solicitacao " + cNSol + " Item "+cNIte+" Nao possui saldo para atender o " + Alltrim(Pedido:Detalhes[nPC]:obs)+" . "
 					lRet := .F.
-					Exit
-				ElseIf SC1->C1_APROV <> "L" // Aprovada
-					cRetorno += "A Solicitacao " + cNSol + " nao esta APROVADA... "
+				ElseIf Alltrim(Pedido:Detalhes[nPC]:Produto) <> Alltrim(SC1->C1_PRODUTO)
+					cRetorno += "O Produto "+Alltrim(Pedido:Detalhes[nPC]:Produto)+" no pedido nao correponde ao Solicitado "+Alltrim(SC1->C1_PRODUTO)+". " + Alltrim(Pedido:Detalhes[nPC]:obs) + " . "
 					lRet := .F.
-					Exit
-				ElseIf SC1->C1_TX <> "TR" // Ja Transmitida
-					cRetorno += "A Solicitacao " + cNSol + " nao foi Transmitida ao Sys-on... "
-					lRet := .F.
-					Exit
 				EndIf
 
 			Next
-
 			If !lRet
 				Return(.F.)
-			EndIf
+			EndIF
 		EndIf
 	EndIf
+
+	SA2->( DbClearFilter() )
 
 	Return(lRet)
 *******************************************************************************
@@ -268,7 +278,7 @@ Static Function ExecAuto(aCab, adet ,lMsErroAuto)//| Executa o MSExecAuto de Inc
 			cRetorno := AjusRet()//| Trata a String de Retorno para ficar mais legivel ao devolver ao WS-Syson
 			Disarmtransaction()
 		Else
-			cRetorno := cNumSc7
+			cRetorno := cNumSc7 +_ENTER +_ENTER +cItAjust
 		EndIf
 
 	Else
@@ -342,6 +352,18 @@ Static Function SldDispSC(cSol, cItem, nQuant)//Verifica o saldo disponivel na S
 	DbSelectArea("SC1")
 	If DbSeek(xFilial("SC1")+cSol+cItem,.F.)
 		nSaldo := SC1->C1_QUANT - SC1->C1_QUJE - nQuant
+	EndIf
+
+	// No caso de ajuste de quantidade, quando ha algum saldo disponivel, mas este saldo nao atende por completo, a SC pode ser ajustada para comportar o pedido.
+	If (SC1->C1_QUANT - SC1->C1_QUJE) > 0 .And. nSaldo < 0
+
+		RecLock("SC1",.F.)
+		SC1->C1_QUANT := SC1->C1_QUJE + nQuant
+		MsUnlock()
+
+		nSaldo := SC1->C1_QUANT - SC1->C1_QUJE - nQuant
+
+		cItAjust += "O Item "+SC1->C1_NUM+" foi Reajustado para Receber o Pedido. " + _ENTER
 	EndIf
 
 Return(nSaldo)

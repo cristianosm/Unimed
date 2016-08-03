@@ -32,7 +32,7 @@ User function Client_EnvSol()
 	Private cNumSol	:= SC1->C1_NUM
 	Private nRecSC1	:= 0 			// Salva o Recno do Item 0001
 	Private cForeLj	:= "AS005201" 	// Unimed Central loja 01
-	Private cFilHom	:= "13"			// Filial Homologada a Receber Enviar Solicitacao e Receber Pedidos Sys-ON
+	Private cFilHom	:= SuperGetMv( "UM_FILHOMS", .F., "13" 	)// Filial Homologada a Receber Enviar Solicitacao e Receber Pedidos Sys-ON
 
 	Private oProcess 	:= Nil
 	Private lEnd 		:= Nil
@@ -278,6 +278,7 @@ Static Function  ShowOk(cRetObs)// Solicitacao nao Recebida....
 	MarkScSend() // Marca a Silicitacao como enviada.
 
 	//| SendMail()
+	U_SMProxSys(cNumSol , cTexto, "Solicitacao Transmitida ao Sys-on ","T")
 
 Return()
 *******************************************************************************
@@ -302,5 +303,3 @@ Static Function MarkScSend() // Marca a Silicitacao como Transmitida.
 
 
 Return()
-
-

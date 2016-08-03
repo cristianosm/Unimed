@@ -32,10 +32,11 @@ User function MT110LEG()
 Local aLegOrigi := aClone(PARAMIXB[1])  // aCores
 Local aLegSysOn := {}
 
-aAdd(aLegSysOn,{ "BR_CINZA_OCEAN.BMP" 	, "Sys-on: Bloqueada" 	} )
-aAdd(aLegSysOn,{ "BR_MARRON_OCEAN.BMP"	, "Sys-on: Aguardando" } )
-aAdd(aLegSysOn,{ "BR_AZUL_OCEAN.BMP"   	, "Sys-on: Transmitida"} )
-aAdd(aLegSysOn,{ "BR_VIOLETA.PNG" 		, "Sys-on: Atendida" 	} )
+aAdd(aLegSysOn,{ "BR_CINZA_OCEAN.BMP" 	, "Sys-on: Bloqueada" 		} )
+aAdd(aLegSysOn,{ "BR_LARANJA_OCEAN.BMP"	, "Sys-on: Aguardando" 		} )
+aAdd(aLegSysOn,{ "BR_AZUL_OCEAN.BMP"   	, "Sys-on: Transmitida"		} )
+aAdd(aLegSysOn,{ "BR_MARRON_OCEAN.BMP"	, "Sys-on: Atendida Parcial"} )
+aAdd(aLegSysOn,{ "BR_BRANCO_OCEAN.BMP" 	, "Sys-on: Atendida Total" 	} )
 
 //| Para que as Legendas do Sys-on tenha Preferencia no Filtro|
 For nA := 1 To Len(aLegOrigi)
