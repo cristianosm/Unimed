@@ -72,15 +72,17 @@ Return(cEmailSo)
 Static Function SendMail(_cTo,_cSubject,_cBody)//| U_EnvMyMail(De, Para, Copia, Assunto, Corpo, Anexo )
 *******************************************************************************
 
-	Local cServer 		:= SuperGetMv( "MV_RELSERV", .F., "mail.unimed-vs.localdomain" 	)
+	Local cServer 		:= SuperGetMv("MV_RELSERV", .F., "mail.unimed-vs.localdomain" 	)
 	Local cAccount 		:= SuperGetMv("MV_RELACNT"	,.F.,"protheus@vs.unimed.com.br"	)
 	Local cPassword 	:= SuperGetMv("MV_RELPSW"	,.F.,"wf"						    )
 	Local lAuth 		:= SuperGetMv("MV_RELAUTH"	,.F.,.F.							)
 	Local lResult  		:= .T.
 	Local cError	    := ''
+	Local cMailGrupo	:= SuperGetMv( "UN_MAGIPS", .F., "solicitacoesmatmed@vs.unimed.com.br" 	)
 
 	Private cFrom		:= "sys-on@vs.unimed.com.br"//Iif(empty(Alltrim(_cFrom)), cAccount, Alltrim(_cFrom))
 	Private cTo			:= Alltrim(_cTo)
+	Private cCC 		:= Alltrim(cMailGrupo)
 	Private cSubject	:= Alltrim(_cSubject)
 	Private cBody		:= Alltrim(_cBody) + " " + Alltrim(_cTo)
 
@@ -91,7 +93,7 @@ Static Function SendMail(_cTo,_cSubject,_cBody)//| U_EnvMyMail(De, Para, Copia, 
 		lResult := MailAuth(cAccount,cPassword)
 	EndIF
 	If lResult
-		SEND MAIL FROM cFrom TO cTo /*cTo*/ CC "" SUBJECT cSubject BODY cBody ATTACHMENT "" RESULT lResult
+		SEND MAIL FROM cFrom TO cTo /*cTo*/ CC cCC SUBJECT cSubject BODY cBody ATTACHMENT "" RESULT lResult
 
 		If !lResult
 			GET MAIL ERROR cError
