@@ -2,88 +2,80 @@
 /*/
 /*****************************************************************************\
 **---------------------------------------------------------------------------**
-** FUNCAO   : MT110GRV   | AUTOR : Cristiano Machado  | DATA : 14/12/2015    **
+** FUNCAO : MT110GRV | AUTOR : Cristiano Machado | DATA : 14/12/2015 **
 **---------------------------------------------------------------------------**
-** DESCRICAO: Função na SC responsavel pela gravação das SCs.                **
-**          : No laço de gravação dos itens da SC na função A110GRAVA,       **
-**          : executado após gravar o item da SC, a cada item gravado da SC  **
-**          :  o ponto é executado..                                         **
+** DESCRICAO: Funcao na SC responsavel pela gravacao das SCs. **
+** : No lao de gravacao dos itens da SC na funcao A110GRAVA, **
+** : executado aps gravar o item da SC, a cada item gravado da SC **
+** : o ponto executado.. **
 **---------------------------------------------------------------------------**
-** USO      : Especifico para o cliente Unimed-VS. Salva o Conteudo do Campo **
-**          : C1_INTWSO - Integração Sys-on Através da Variavel cIntWSo      **
+** USO : Especifico para o cliente Unimed-VS. Salva o Conteudo do Campo **
+** : C1_INTWSO - Integracao Sys-on Atravs da Variavel cIntWSo **
 **---------------------------------------------------------------------------**
-**            ATUALIZACOES SOFRIDAS DESDE A CONSTRUCAO INICIAL.              **
+** ATUALIZACOES SOFRIDAS DESDE A CONSTRUCAO INICIAL. **
 **---------------------------------------------------------------------------**
-**   PROGRAMADOR   |   DATA   |            MOTIVO DA ALTERACAO               **
+** PROGRAMADOR | DATA | MOTIVO DA ALTERACAO **
 **---------------------------------------------------------------------------**
-**                 |          |                                              **
-**                 |          |                                              **
+** | | **
+** | | **
 \*---------------------------------------------------------------------------*/
 *******************************************************************************
 User Function MT110GRV()
-*******************************************************************************
-//Caso PARAMIXB == .T.(Copia da solicitao de compras esta ativa), se .F.(Copia no esta ativa)
-lExp1 :=  PARAMIXB[1]
+	*******************************************************************************
+	//Caso PARAMIXB == .T.(Copia da solicitao de compras esta ativa), se .F.(Copia no esta ativa)
+	lExp1 := PARAMIXB[1]
 
+	//| Salva o Conteudo da Variavel cIntWSo Que existe no Cab. da Sol de Compras na Tebla SC1
+	SvCpoISo()
 
+	//| Customizacao que ja existia no Fonte da Unimed MT112GRV. Deve ser Substituido por este.
+	CustomUni()
 
-//| Salva o Conteudo da Variavel cIntWSo Que existe no Cab. da Sol de Compras na Tebla SC1
-SvCpoISo()
-
-//| Customizacao que já existia no Fonte da Unimed MT112GRV. Deve ser Substituido por este.
-CustomUni()
-
-Return()
-*******************************************************************************
+	Return()
+	*******************************************************************************
 Static Function SvCpoISo()//| Salva o Conteudo da Variavel cIntWSo Que existe no Cab. da Sol de Compras na Tebla SC1
-*******************************************************************************
+	*******************************************************************************
 
-
-RecLock("SC1",.F.)
-SC1->C1_INTWSO := cIntWSo
-If cIntWSo == "S" .And. SC1->C1_TX == "  " //| Solicitação Sys-On
-	SC1->C1_TX := "AG"
-EndIf
-MsUnlock()
-
- // So envia o email uma vez o email ....
-If Type('cLastSendSc') == 'U'
-	Public cLastSendSc := ""
-Endif
-If cLastSendSc <> SC1->C1_NUM
-	U_SMProxSys( SC1->C1_NUM , "Solicitacao Sys-On "+SC1->C1_NUM+", aguardando Liberacao.", "Incluida SC Sys-On","C" )
-
-	cLastSendSc := SC1->C1_NUM
-EndIF
-
-Return()
-*******************************************************************************
-Static Function CustomUni()//| Customizacao que já existia no Fonte da Unimed MT112GRV. Deve ser Substituido por este.
-*******************************************************************************
-
-If !INCLUI .and. !ALTERA
-	If Z51->(MsSeek(SC1->(C1_FILIAL + C1_NUM)))
-		While !Z51->(Eof()) .and. SC1->(C1_FILIAL + C1_NUM) == Z51->(Z51_FILIAL + Z51_NUMSC)
-			Z51->(RecLock("Z51",.F.))
-			Z51->(DbDelete())
-			Z51->(Msunlock())
-			Z51->(DbSkip(1))
-		EndDo
+	RecLock("SC1",.F.)
+	SC1->C1_INTWSO := cIntWSo
+	If cIntWSo == "S" .And. SC1->C1_TX == " " //| Solicitacao Sys-On
+		SC1->C1_TX := "AG"
 	EndIf
-	If Z50->(MsSeek(SC1->(C1_FILIAL + C1_NUM)))
-		While !Z50->(Eof()) .and. SC1->(C1_FILIAL + C1_NUM) == Z50->(Z50_FILIAL + Z50_NUMSC)
-			Z50->(RecLock("Z50",.F.))
-			Z50->(DbDelete())
-			Z50->(Msunlock())
-			Z50->(DbSkip(1))
-		EndDo
-	EndIf
-Else
-	If SC1->(!Eof())
-	    RecLock("SC1",.F.)
-		C1_APROV := "B"
-		Msunlock()
-	EndIf
-EndIf
+	MsUnlock()
+
+	// So envia o email uma vez o email ....
+	If Type('cLastSendSc') == 'U'
+		Public cLastSendSc := ""
+	Endif
+	If cLastSendSc <> SC1->C1_NUM
+		U_SMProxSys( SC1->C1_NUM , "Solicitacao Sys-On "+SC1->C1_NUM+", aguardando Liberacao.", "Incluida SC Sys-On","C" )
+
+		cLastSendSc := SC1->C1_NUM
+	EndIF
+
+	Return()
+	*******************************************************************************
+Static Function CustomUni()//| Customizacao que ja existia no Fonte da Unimed MT112GRV. Deve ser Substituido por este.
+	*******************************************************************************
+
+	Local cClasVal := ""
+	Local cTProd := ""
+	Local cDifClas := AllTrim(Getmv("MV_DIFCLAS"))//0900001
+	Local cTipProd := AllTrim(Getmv("MV_TIPPRO"))//ME#MC#DE
+
+	cClasVal := AllTrim(aCols[1][aScan(aHeader, {|x| AllTrim(x[2]) == "C1_CLVL"})])
+	cTProd := Alltrim(Posicione("SB1",1,xFilial("SB1")+AllTrim(aCols[1][aScan(aHeader, {|x| AllTrim(x[2]) == "C1_PRODUTO"})]),"B1_TIPO"))
+
+	If cClasVal $ cDifClas .and. cTProd $ cTipProd
+		SC1->(dbSetOrder(1))
+		If SC1->(MsSeek(xFilial("SC1")+cA110Num))
+			While xFilial("SC1")+cA110Num == SC1->(C1_FILIAL+C1_NUM)
+				SC1->(RecLock("SC1",.F.))
+				SC1->C1_APROV := "L"
+				SC1->(MsUnlock())
+				SC1->(dbSkip())
+			EndDo
+		EndIf
+	EndIF
 
 Return()

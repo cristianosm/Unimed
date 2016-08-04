@@ -363,7 +363,7 @@ Static Function SldDispSC(cSol, cItem, nQuant)//Verifica o saldo disponivel na S
 
 		nSaldo := SC1->C1_QUANT - SC1->C1_QUJE - nQuant
 
-		cItAjust += "O Item "+cItem+" da Solicitacao "+cSol+"foi Reajustado para Receber o Pedido. Quantidade Original:"+cValToChar(SC1->C1_QUANT-SC1->C1_QUJE)+"   Quantidade Recebida: "+cValToChar(nQuant)+"." + _ENTER
+		cItAjust += "O Item "+cItem+" da Solicitacao "+cSol+"foi Reajustado para Receber o Pedido. Quantidade Disponivel:"+cValToChar(SC1->C1_QUANT-SC1->C1_QUJE)+"   Quantidade Recebida: "+cValToChar(nQuant)+"." + _ENTER
 	EndIf
 
 Return(nSaldo)
