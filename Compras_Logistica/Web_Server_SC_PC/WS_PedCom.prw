@@ -40,18 +40,22 @@ WsMethod RecebePedido WsReceive Pedido WsSend oRetorno WsService WS_PEDCOM //| M
 *******************************************************************************
 	Private cRetorno 	:= ""
 	Private lMsErroAuto := .F.
-
-	cRetorno := U_Rec_PedCom(@Pedido,@lMsErroAuto)
-
+	Private WScRetorno  := ""
+	
+	cRetorno 	:= U_Rec_PedCom(@Pedido,@lMsErroAuto)
+	WScRetorno 	:= Substr(cRetorno, 1 , If( Len(cRetorno) > 177, 177 , Len(cRetorno)) )
+	
 	If lMsErroAuto
+	
+		
 		oRetorno:Pedido:Retorno:Ocorrencia := "N"
-		oRetorno:Pedido:Retorno:Observacao := "Pedido nao recebido..." + cRetorno
+		oRetorno:Pedido:Retorno:Observacao := "Pedido nao recebido..." + WScRetorno
 	Else
 		oRetorno:Pedido:Retorno:Ocorrencia := "S"
-		oRetorno:Pedido:Retorno:Observacao := "Pedido Recebido com Sucesso...Numero: " + cRetorno
+		oRetorno:Pedido:Retorno:Observacao := "Pedido Recebido com Sucesso...Numero: " + WScRetorno
 
 		//| SendMail()
-		U_SMProxSys( StrZero(Pedido:Detalhes[1]:NumSC,6) , oRetorno:Pedido:Retorno:Observacao, "Pedido Recebido do Sys-on" , "T" )
+		U_SMProxSys( StrZero(Pedido:Detalhes[1]:NumSC,6) , "Pedido Recebido com Sucesso...Numero: " + cRetorno + ENTER + ENTER , "Pedido Recebido do Sys-on" , "T" )
 
 	EndIf
 

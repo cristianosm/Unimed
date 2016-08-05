@@ -49,7 +49,7 @@ User Function Rec_PedCom(Pedido,lMsErroAuto)
 
 	SC7->(ConfirmSX8())
 
-	Return( Substr(cRetorno, 1 , If( Len(cRetorno)>177,177, Len(cRetorno)) ) )// Ajusta o Limite do Retorno
+	Return(cRetorno )// Ajusta o Limite do Retorno
 *******************************************************************************
 Static Function PrepVareAmb()//| Prepara as Variaveis,Tabelas e Ambiente Utilizado...
 *******************************************************************************
@@ -357,13 +357,15 @@ Static Function SldDispSC(cSol, cItem, nQuant)//Verifica o saldo disponivel na S
 	// No caso de ajuste de quantidade, quando ha algum saldo disponivel, mas este saldo nao atende por completo, a SC pode ser ajustada para comportar o pedido.
 	If (SC1->C1_QUANT - SC1->C1_QUJE) > 0 .And. nSaldo < 0
 
+		cItAjust += "O Item "+cItem+" da Solicitacao "+cSol+" foi Reajustado para Receber o Pedido. Quantidade Disponivel:"+cValToChar(SC1->C1_QUANT-SC1->C1_QUJE)+"   Quantidade Recebida: "+cValToChar(nQuant)+"." + _ENTER
+
 		RecLock("SC1",.F.)
 		SC1->C1_QUANT := SC1->C1_QUJE + nQuant
 		MsUnlock()
 
 		nSaldo := SC1->C1_QUANT - SC1->C1_QUJE - nQuant
 
-		cItAjust += "O Item "+cItem+" da Solicitacao "+cSol+"foi Reajustado para Receber o Pedido. Quantidade Disponivel:"+cValToChar(SC1->C1_QUANT-SC1->C1_QUJE)+"   Quantidade Recebida: "+cValToChar(nQuant)+"." + _ENTER
+		
 	EndIf
 
 Return(nSaldo)
