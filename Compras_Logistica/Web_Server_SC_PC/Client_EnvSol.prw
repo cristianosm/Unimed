@@ -130,6 +130,15 @@ Static Function ValidaEnvio(cRetOcor,cRetObs) //| Pre-Validacoes para Envio |
 				lVal := .F.
 			EndIf
 
+			// Valida Segunda Unidade de Medida
+			If SC1->C1_QTSEGUM > 0
+				If Mod(SC1->C1_QTSEGUM, 1) > 0
+					cRetOcor := "N" ;eVal(bVNIEnter)
+					cRetObs += "O Item " + Alltrim(SC1->C1_ITEM) + " Produto: "+Alltrim(SC1->C1_PRODUTO)+" possui uma quantidade invalida na Segunda Unidade de Medida. Valor Fracionado! ("+cForeLj+")" + _ENTER
+					lVal := .F.
+				EndIf
+			EndIf
+
 			DbSelectArea("SC1");DbSkip()
 
 		EndDo
@@ -202,8 +211,8 @@ Static Function ADetalhes(oDetalhes)//| Alimenta os Detalhes com os Itens
 		oDetAux:cproduto		:= Alltrim(	SC1->C1_PRODUTO )
 		oDetAux:cdescricao		:= Alltrim(Posicione("SB1",1,xFilial("SB1")+SC1->C1_PRODUTO,"B1_DESC"))
 		oDetAux:cprodfor  		:= Alltrim(Posicione("SA5",1,xFilial("SA5")+cForeLj+SC1->C1_PRODUTO,"A5_CODPRF"))
-		oDetAux:cunimed   		:= Alltrim(Posicione("SB1",1,xFilial("SB1")+SC1->C1_PRODUTO,"B1_UM"))
-		oDetAux:nquantidade		:= SC1->C1_QUANT
+		oDetAux:cunimed   		:= Iif( SC1->C1_QTSEGUM > 0, SC1->C1_SEGUM, SC1->C1_UM ) // ENVIA NA SEGUNDA UNIDADE //Alltrim(Posicione("SB1",1,xFilial("SB1")+SC1->C1_PRODUTO,"B1_UM"))
+		oDetAux:nquantidade		:= Iif( SC1->C1_QTSEGUM > 0, SC1->C1_QTSEGUM, SC1->C1_QUANT) // ENVIA NA SEGUNDA UNIDADE
 		oDetAux:cnecessidade	:= DtoS(SC1->C1_DATPRF)
 		oDetAux:cobs        	:= Alltrim( SubsTr(SC1->C1_OBS,1,150) )
 

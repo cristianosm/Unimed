@@ -186,7 +186,7 @@ Static Function Valida(Pedido,lMsErroAuto)//| Valida o Pedido Recebido
 			Return(.F.)
 		Else
 
-			// Valida se Quantidade disponivel na Solicitacao Atende o Item do Pedido e se nao e o mesmo Produto da Solicitacao
+			// Valida se Quantidade disponivel na Solicitacao Atende o Item do Pedido e verifica se eh o mesmo Produto da Solicitacao
 			For nPC := 1 to len(Pedido:Detalhes)
 
 				cNSol := StrZero(Pedido:Detalhes[nPC]:NumSC,6)
@@ -248,6 +248,8 @@ Static Function MDet(adet)//| Alimenta o Array dos detalhes do Pedido para o MSA
 
 		oItem := Pedido:Detalhes[nPC]
 
+		TratamentoUM(@oItem) // Verifica a necessidade do tratamento de Conversao de unidade, Para ajustar Quantiade e PrUnit.
+
 		aadd(aDet,{	{"C7_ITEM"   	,StrZero(oItem:Item,4)		,nil},;
 		{"C7_PRODUTO"	,RetProd(oItem:ProdFor)		,nil},;
 		{"C7_CLVL"		,"0900001"					,nil},; // pegar da Solicitacao
@@ -266,9 +268,29 @@ Static Function MDet(adet)//| Alimenta o Array dos detalhes do Pedido para o MSA
 	Next nPC
 
 	Return()
-	*******************************************************************************
+*******************************************************************************
+Static Function TratamentoUM(oItem)// Verifica a necessidade do tratamento de Conversao de unidade, Para ajustar Quantiade e PrUnit.
+*******************************************************************************
+Local cNumSol := StrZero(oItem:NumSC,6)  // Numero Informado da Solicitacao
+Local cIteSol := StrZero(oItem:ItemSC,4) // Item da Solicitacao
+Local nQtdPed := SToV(oItem:Quantidade)  // Quantidade Recebida para utilizar no Pedido
+Local nPrUPed := SToV(oItem:PrcUnit	 )	// Preco unitario Recebida para utilizar Pedido
+Local nTotPed := SToV(oItem:Total	 )	// Valor Total Item Recebido para utilizar Pedido
+
+If DbSeek(xFilial("SC1")+cNumSol+cIteSol,.F.)
+
+	If SC1->C1_QTSEGUM > 0 // Solicitacao Utilizou Segunda Unidade
+
+		oItem:Quantidade := VToS(	ConvUM(nQtdPed, SC1->C1_PRODUTO, 'SP') )
+		oItem:PrcUnit	 := VToS(	ConvUM(nPrUPed, SC1->C1_PRODUTO, 'PS') ) // No Valor a Conversao deve ser sempre de PS.
+		oItem:Total		 := VToS(	SToV(oItem:Quantidade) * SToV(oItem:PrcUnit) )
+
+	EndIf
+
+EndIf
+*******************************************************************************
 Static Function ExecAuto(aCab, adet ,lMsErroAuto)//| Executa o MSExecAuto de Inclusao do pedido de compras
-	*******************************************************************************
+*******************************************************************************
 
 	If Len( aCab ) > 0 .And. Len( aDet ) > 0
 
@@ -316,9 +338,17 @@ Static Function SToV(cString)//| Converte Char para Number
 *******************************************************************************
 	Local nVal := 0
 
-	nVal := Val(StrTran(cString,",","."	))
+	nVal := Val(StrTran(cString, "," , "."	))
 
 	Return(nVal)
+*******************************************************************************
+Static Function VToS(nVal)//| Converte Number para Char
+*******************************************************************************
+	Local cVal := cValToChar(nVal)
+
+	cVal := StrTran(cVal, "." , ","	)
+
+	Return(cVal)
 *******************************************************************************
 Static Function RetProd(CProdFor)//| Retorna o Produto x Fornecedor referente a UnimedCentral, necessario para a integracao
 *******************************************************************************
@@ -351,24 +381,61 @@ Static Function SldDispSC(cSol, cItem, nQuant)//Verifica o saldo disponivel na S
 
 	DbSelectArea("SC1")
 	If DbSeek(xFilial("SC1")+cSol+cItem,.F.)
+
+		If SC1->C1_QTSEGUM > 0 // Verifica necessidade de Conversao
+			nQuant := ConvUM(nQuant, SC1->C1_PRODUTO, 'SP') // Converte a Unidade de Medida se o Cadastro do Produto tiver a conversao informada.
+		EndIf
 		nSaldo := SC1->C1_QUANT - SC1->C1_QUJE - nQuant
+
+
+		// No caso de ajuste de quantidade, quando ha algum saldo disponivel, mas este saldo nao atende por completo, a SC pode ser ajustada para comportar o pedido.
+		If (SC1->C1_QUANT - SC1->C1_QUJE) > 0 .And. nSaldo < 0
+
+			cItAjust += "O Item "+cItem+" da Solicitacao "+cSol+" foi Reajustado para Receber o Pedido. Quantidade Disponivel:"+cValToChar(SC1->C1_QUANT-SC1->C1_QUJE)+"   Quantidade Recebida: "+cValToChar(nQuant)+"." + _ENTER
+
+			RecLock("SC1",.F.)
+			SC1->C1_QUANT := SC1->C1_QUJE + nQuant
+			If SC1->C1_QTSEGUM > 0
+				SC1->C1_QTSEGUM := ConvUM(SC1->C1_QUJE + nQuant, SC1->C1_PRODUTO, 'PS')
+			EndIF
+			MsUnlock()
+
+			nSaldo := SC1->C1_QUANT - SC1->C1_QUJE - nQuant
+
 	EndIf
-
-	// No caso de ajuste de quantidade, quando ha algum saldo disponivel, mas este saldo nao atende por completo, a SC pode ser ajustada para comportar o pedido.
-	If (SC1->C1_QUANT - SC1->C1_QUJE) > 0 .And. nSaldo < 0
-
-		cItAjust += "O Item "+cItem+" da Solicitacao "+cSol+" foi Reajustado para Receber o Pedido. Quantidade Disponivel:"+cValToChar(SC1->C1_QUANT-SC1->C1_QUJE)+"   Quantidade Recebida: "+cValToChar(nQuant)+"." + _ENTER
-
-		RecLock("SC1",.F.)
-		SC1->C1_QUANT := SC1->C1_QUJE + nQuant
-		MsUnlock()
-
-		nSaldo := SC1->C1_QUANT - SC1->C1_QUJE - nQuant
-
-		
+	Else
+		cItAjust += "O Item "+cItem+" da Solicitacao "+cSol+" nao foi encontrado para Receber o Pedido. " + _ENTER
+		nSaldo := ( nQuant * -1 )
 	EndIf
 
 Return(nSaldo)
+*******************************************************************************
+Static Function ConvUM(nQuant, cProduto, cDePara)  // Converte a Unidade de Medida se o Cadastro do Produto tiver a conversao informada.
+*******************************************************************************
+
+Local nFator := Posicione("SB1",1,xFilial("SB1")+cProduto,"B1_CONV")
+Local cTConv := Posicione("SB1",1,xFilial("SB1")+cProduto,"B1_TIPCONV")
+Local nQConv := 0 // Quantidade Convertida
+
+If cDePara == "SP" // Converte da Segunda para Primeira Unidade
+
+	If cTConv == "M" // Multiplicador
+		nQConv := nQuant / nFator
+	ElseIf cTConv == "D" // Divisor
+		nQConv := nQuant * nFator
+	EndIF
+
+ElseIf cDePara == "PS" // Converte da Primeira para Segunda Unidade
+
+	If cTConv == "M" // Multiplicador
+		nQConv := nQuant * nFator
+	ElseIf cTConv == "D" // Divisor
+		nQConv := nQuant / nFator
+	EndIF
+
+EndIF
+
+Return(nQConv)
 *******************************************************************************
 Static Function GetObs(oItem) //Tratamento e Ajuste da Obs recebido pelo Sys-On
 *******************************************************************************
@@ -378,3 +445,4 @@ cObs += "P.SysOn [" + Substr( oItem:Obs , At(" ",oItem:Obs) + 1 , 10 )+"] "
 cObs += Alltrim( Posicione("SC1",1,xFilial("SC1") + StrZero(oItem:NumSC,6) + StrZero(oItem:ItemSC,4) ,"C1_OBS") )
 
 Return(cObs)
+

@@ -38,7 +38,7 @@ Static Function SvCpoISo()//| Salva o Conteudo da Variavel cIntWSo Que existe no
 
 	RecLock("SC1",.F.)
 	SC1->C1_INTWSO := cIntWSo
-	If cIntWSo == "S" .And. SC1->C1_TX == " " //| Solicitacao Sys-On
+	If cIntWSo == "S" //.And. Empty(SC1->C1_TX) //| Solicitacao Sys-On
 		SC1->C1_TX := "AG"
 	EndIf
 	MsUnlock()
