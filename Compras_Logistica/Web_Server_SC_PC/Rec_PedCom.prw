@@ -144,27 +144,32 @@ Static Function Valida(Pedido,lMsErroAuto)//| Valida o Pedido Recebido
 		Return(.F.)
 	EndIf
 
-
-
-	//| Valida se a Solicitacao eh Sys-ON, Esta Libera e ja Foi Transmitida. Deve Estar POSICIONADO no SC1
+	//| Valida se a Solicitacao eh Sys-ON, Estah Liberada e jah Foi Transmitida. Deve Estar POSICIONADO no SC1
 	For nPC := 1 to len(Pedido:Detalhes)
 		cNSol := StrZero(Pedido:Detalhes[nPC]:NumSC,6)
 		cNIte := StrZero(Pedido:Detalhes[nPC]:ItemSC,4)
-		SC1->(DbSeek(xFilial("SC1")+cNSol+cNIte,.F.))
-		If SC1->C1_INTWSO <> "S"  // Sys-On
-			cRetorno += "A Solicitacao " + cNSol + " nao e uma Solicitacao Sys-On...  "
-			lRet := .F.
-			Exit
-		ElseIf SC1->C1_APROV <> "L" // Aprovada
-			cRetorno += "A Solicitacao " + cNSol + " nao esta APROVADA... "
-			lRet := .F.
-			Exit
-		ElseIf SC1->C1_TX <> "TR" // Ja Transmitida
-			cRetorno += "A Solicitacao " + cNSol + " nao foi Transmitida ao Sys-on... "
+		
+		DbSelectArea("SC1")
+		If SC1->(DbSeek(xFilial("SC1")+cNSol+cNIte,.F.))
+		
+			If SC1->C1_INTWSO <> "S"  // Sys-On
+				cRetorno += "A Solicitacao " + cNSol + " item "+ cNIte +", nao eh uma Solicitacao Sys-On...  "
+				lRet := .F.
+				Exit
+			ElseIf SC1->C1_APROV <> "L" // Aprovada
+				cRetorno += "A Solicitacao " + cNSol + " nao esta APROVADA... "
+				lRet := .F.
+				Exit
+			ElseIf SC1->C1_TX <> "TR" // Ja Transmitida
+				cRetorno += "A Solicitacao " + cNSol + " nao foi Transmitida ao Sys-on... "
+				lRet := .F.
+				Exit
+			EndIf
+		Else
+			cRetorno += "A Solicitacao " + cNSol + " item "+cNIte+" nao foi encontrada....  "
 			lRet := .F.
 			Exit
 		EndIf
-
 	Next
 	If !lRet
 		Return(.F.)
