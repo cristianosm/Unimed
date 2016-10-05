@@ -91,7 +91,7 @@ cSoap += "</RECEBEHORA>"
 oXmlRet := SvcSoapCall(	Self,cSoap,;
 	"",;
 	"DOCUMENT","http://services.soc.syson.com.br/",,,;
-	"http://sys-on.com.br:8080/SocWebService/VS")
+	GetMv("UN_WSSYSON"))
 
 ::Init()
 ::cHORA              :=  WSAdvValue( oXmlRet,"_RECEBEHORARESPONSE:_HORA:TEXT","string",NIL,NIL,NIL,NIL,NIL,NIL)
@@ -115,7 +115,7 @@ cSoap += "</ENVIATESTE>"
 oXmlRet := SvcSoapCall(	Self,cSoap,;
 	"",;
 	"DOCUMENT","http://services.soc.syson.com.br/",,,;
-	"http://sys-on.com.br:8080/SocWebService/VS")
+	GetMv("UN_WSSYSON"))
 
 ::Init()
 ::cTESTE             :=  WSAdvValue( oXmlRet,"_ENVIATESTERESPONSE:_TESTE:TEXT","string",NIL,NIL,NIL,NIL,NIL,NIL)
@@ -139,7 +139,7 @@ cSoap += "</enviaPedido>"
 oXmlRet := SvcSoapCall(	Self,cSoap,;
 	"",;
 	"DOCUMENT","http://services.soc.syson.com.br/",,,;
-	"http://sys-on.com.br:8080/SocWebService/VS")
+	GetMv("UN_WSSYSON"))
 
 ::Init()
 ::oWSPEDIDO:SoapRecv( WSAdvValue( oXmlRet,"_ENVIAPEDIDORESPONSE:_PEDIDO","pedido",NIL,NIL,NIL,NIL,@oWSPEDIDO,NIL) )
@@ -163,7 +163,7 @@ cSoap += "</recebePedido>"
 oXmlRet := SvcSoapCall(	Self,cSoap,;
 	"",;
 	"DOCUMENT","http://services.soc.syson.com.br/",,,;
-	"http://sys-on.com.br:8080/SocWebService/VS")
+	GetMv("UN_WSSYSON"))
 
 ::Init()
 ::oWSPEDIDO:SoapRecv( WSAdvValue( oXmlRet,"_RECEBEPEDIDORESPONSE:_PEDIDO","pedido",NIL,NIL,NIL,NIL,@oWSPEDIDO,NIL) )
@@ -187,7 +187,7 @@ cSoap += 	WSSoapValue("solicitacao"	, ::oWSsolicitacao	, oWSsolicitacao 	, "soli
 cSoap += "</enviaSolicitacao>"
 
 oXmlRet := SvcSoapCall(	Self,cSoap,;
-	"","DOCUMENT","http://services.soc.syson.com.br/",,"1.031217","http://sys-on.com.br:8080/SocWebService/VS")
+	"","DOCUMENT","http://services.soc.syson.com.br/",,"1.031217",GetMv("UN_WSSYSON"))
 
 ::Init()
 ::oWSsolicitacao:SoapRecv( WSAdvValue( oXmlRet,"_ENVIASOLICITACAORESPONSE:_SOLICITACAO","solicitacao",NIL,NIL,NIL,NIL,@oWSsolicitacao,NIL) )

@@ -47,7 +47,7 @@ Static Function SvCpoISo()//| Salva o Conteudo da Variavel cIntWSo Que existe no
 	If Type('cLastSendSc') == 'U'
 		Public cLastSendSc := ""
 	Endif
-	If cLastSendSc <> SC1->C1_NUM
+	If cLastSendSc <> SC1->C1_NUM .and. cIntWSo == "S"
 		U_SMProxSys( SC1->C1_NUM , "Solicitacao Sys-On "+SC1->C1_NUM+", aguardando Liberacao.", "Incluida SC Sys-On","C" )
 
 		cLastSendSc := SC1->C1_NUM
